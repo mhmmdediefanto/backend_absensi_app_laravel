@@ -19,6 +19,12 @@ return Application::configure(basePath: dirname(__DIR__))
             ThrottleRequests::class,
         ]);
 
+        $middleware->alias([
+            'is_admin' => \App\Http\Middleware\is_admin::class,
+            'is_siswa' => \App\Http\Middleware\is_siswa::class,
+            'is_guru' => \App\Http\Middleware\is_guru::class,
+        ]);
+
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //

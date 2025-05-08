@@ -1,0 +1,22 @@
+Fitur	                            Admin	Guru	Siswa
+Kelola data siswa	                ✅	    ❌	    ❌
+Kelola data guru	                ✅	    ❌	    ❌
+Kelola lokasi PRAKERIN	            ✅	    ✅	    ❌
+Melihat absensi	                    ✅	    ✅	    ✅
+Melakukan absensi (lokasi & wajah)	❌	    ❌	    ✅
+Verifikasi lokasi dan wajah	        ✅	    ✅	    ❌
+Generate laporan absensi	        ✅	    ✅	    ✅
+
+==== Fitur Admin ====
+1. kelola data siswa    
+    - Create single siswa ✅
+    - Hapus Siswa ✅
+    - Import siswa csv/exel
+    - Detail Siswa User ✅
+2. Kelola Data Guru
+    - Create Guru
+    - Hapus Guru
+    - Import Guru csv/exel
+    - Detail Guru
+3. 
+===== End Admin =====
