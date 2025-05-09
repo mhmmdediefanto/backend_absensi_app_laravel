@@ -25,7 +25,8 @@ class SiswaSeeder extends Seeder
                 'jurusan' => 'Rekayasa Perangkat Lunak',
                 'no_hp' => '08123456789',
                 'alamat' => 'Jl. Raya No. 1',
-                'foto_wajah' => null
+                'foto_wajah' => null,
+                'lokasi_prakerin_id' => null
             ],
             [
                 'nama' => 'Ani',
@@ -36,7 +37,8 @@ class SiswaSeeder extends Seeder
                 'jurusan' => 'Rekayasa Perangkat Lunak',
                 'no_hp' => '08234567890',
                 'alamat' => 'Jl. Raya No. 2',
-                'foto_wajah' => null
+                'foto_wajah' => null,
+                'lokasi_prakerin_id' => null
             ],
             [
                 'nama' => 'Budi',
@@ -47,7 +49,8 @@ class SiswaSeeder extends Seeder
                 'jurusan' => 'Rekayasa Perangkat Lunak',
                 'no_hp' => '08345678901',
                 'alamat' => 'Jl. Raya No. 3',
-                'foto_wajah' => null
+                'foto_wajah' => null,
+                'lokasi_prakerin_id' => null
             ],
             [
                 'nama' => 'Caca',
@@ -58,7 +61,8 @@ class SiswaSeeder extends Seeder
                 'jurusan' => 'Rekayasa Perangkat Lunak',
                 'no_hp' => '08456789012',
                 'alamat' => 'Jl. Raya No. 4',
-                'foto_wajah' => null
+                'foto_wajah' => null,
+                'lokasi_prakerin_id' => null
             ],
             [
                 'nama' => 'Dedi',
@@ -69,7 +73,8 @@ class SiswaSeeder extends Seeder
                 'jurusan' => 'Rekayasa Perangkat Lunak',
                 'no_hp' => '08567890123',
                 'alamat' => 'Jl. Raya No. 5',
-                'foto_wajah' => null
+                'foto_wajah' => null,
+                'lokasi_prakerin_id' => null
             ],
             [
                 'nama' => 'Eka',
@@ -80,7 +85,8 @@ class SiswaSeeder extends Seeder
                 'jurusan' => 'Rekayasa Perangkat Lunak',
                 'no_hp' => '08678901234',
                 'alamat' => 'Jl. Raya No. 6',
-                'foto_wajah' => null
+                'foto_wajah' => null,
+                'lokasi_prakerin_id' => null
             ],
             [
                 'nama' => 'Feri',
@@ -91,11 +97,12 @@ class SiswaSeeder extends Seeder
                 'jurusan' => 'Rekayasa Perangkat Lunak',
                 'no_hp' => '08789012345',
                 'alamat' => 'Jl. Raya No. 7',
-                'foto_wajah' => null
+                'foto_wajah' => null,
+                'lokasi_prakerin_id' => null
             ]
         ];
 
-        foreach($dataSiswa as $siswa) {
+        foreach ($dataSiswa as $siswa) {
             $user = User::create([
                 'email' => $siswa['email'],
                 'password' => Hash::make($siswa['password']),
@@ -110,7 +117,9 @@ class SiswaSeeder extends Seeder
                 'jurusan' => $siswa['jurusan'],
                 'no_hp' => $siswa['no_hp'],
                 'alamat' => $siswa['alamat'],
-                'foto_wajah' => $siswa['foto_wajah']
+                'foto_wajah' => $siswa['foto_wajah'],
+                'created_at' => now(),
+                'updated_at' => now()
             ]);
         }
     }
