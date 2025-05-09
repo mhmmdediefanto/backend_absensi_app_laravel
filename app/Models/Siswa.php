@@ -14,8 +14,4 @@ class Siswa extends Model
         return $this->belongsTo(User::class, 'user_id');
     }
 
-    public function lokasiPrakerin()
-    {
-        return $this->belongsTo(LokasiPrakerin::class, 'lokasi_prakerin_id', 'id');
-    }
 }

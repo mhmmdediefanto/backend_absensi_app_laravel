@@ -13,17 +13,14 @@ return new class extends Migration
     {
         Schema::create('pembimbings', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('user_id');
-            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
             $table->unsignedBigInteger('guru_id');
             $table->foreign('guru_id')->references('id')->on('gurus')->onDelete('cascade');
             $table->unsignedBigInteger('lokasi_prakerin_id');
             $table->foreign('lokasi_prakerin_id')->references('id')->on('lokasi_prakerins')->onDelete('cascade');
-            $table->timestamps();
 
-            // Tambahan constraint untuk menjaga logika relasi
-            $table->unique('user_id');   // 1 user hanya punya 1 pembimbing
-            $table->unique('guru_id');   // 1 guru hanya membimbing 1 lokasi prakerin
+            $table->string('tahun_ajaran')->nullable();
+            $table->timestamps();
+            $table->softDeletes();
         });
     }
 

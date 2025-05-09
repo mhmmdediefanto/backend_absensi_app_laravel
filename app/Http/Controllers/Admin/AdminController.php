@@ -171,9 +171,6 @@ class AdminController extends Controller
             'user' => function ($query) {
                 $query->select('id', 'name', 'email', 'roles');
             },
-            'lokasiPrakerin' => function ($query) {
-                $query->select('id', 'nama_instansi', 'alamat');
-            }
         ])
             ->where('id', $id)
             ->select('user_id', 'lokasi_prakerin_id', 'nama', 'nis', 'kelas', 'jurusan', 'no_hp', 'alamat',)
