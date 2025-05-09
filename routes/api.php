@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\AdminController;
+use App\Http\Controllers\Admin\AdminGuruController;
 use App\Http\Controllers\Auth\AuthController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -20,6 +21,10 @@ Route::prefix('admin')->middleware(['auth:sanctum', 'is_admin'])->group(function
     Route::delete('/delete-siswa/{id}', [AdminController::class, 'deleteSiswa']);
     Route::get('/detail-siswa/{id}', [AdminController::class, 'detailSiswa']);
     Route::post('/siswa-import', [AdminController::class, 'siswaImport']);
+
+    Route::get('/get-guru', [AdminGuruController::class, 'getGuru']);
+    Route::delete('/guru-delete/{id}', [AdminGuruController::class, 'delete']);
+
 });
 
 Route::prefix('siswa')->middleware(['auth:sanctum', 'is_siswa'])->group(function () {
@@ -31,9 +36,11 @@ Route::prefix('siswa')->middleware(['auth:sanctum', 'is_siswa'])->group(function
 });
 
 Route::prefix('guru')->middleware(['auth:sanctum', 'is_guru'])->group(function () {
-    Route::get('/get-siswa', function (Request $request) {
-        return response()->json([
-            'users' => \App\Models\Guru::all(),
-        ]);
-    });
+    Route::get('/get-guru', [AdminGuruController::class, 'getGuru']);
+});
+
+Route::fallback(function () {
+    return response()->json([
+        'message' => 'API not found',
+    ], 404);
 });

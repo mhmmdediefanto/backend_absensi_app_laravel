@@ -20,6 +20,10 @@ return new class extends Migration
             $table->unsignedBigInteger('lokasi_prakerin_id');
             $table->foreign('lokasi_prakerin_id')->references('id')->on('lokasi_prakerins')->onDelete('cascade');
             $table->timestamps();
+
+            // Tambahan constraint untuk menjaga logika relasi
+            $table->unique('user_id');   // 1 user hanya punya 1 pembimbing
+            $table->unique('guru_id');   // 1 guru hanya membimbing 1 lokasi prakerin
         });
     }
 
