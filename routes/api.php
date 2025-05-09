@@ -19,6 +19,7 @@ Route::prefix('admin')->middleware(['auth:sanctum', 'is_admin'])->group(function
     Route::post('/create-siswa', [AdminController::class, 'createSiswa']);
     Route::delete('/delete-siswa/{id}', [AdminController::class, 'deleteSiswa']);
     Route::get('/detail-siswa/{id}', [AdminController::class, 'detailSiswa']);
+    Route::post('/siswa-import', [AdminController::class, 'siswaImport']);
 });
 
 Route::prefix('siswa')->middleware(['auth:sanctum', 'is_siswa'])->group(function () {

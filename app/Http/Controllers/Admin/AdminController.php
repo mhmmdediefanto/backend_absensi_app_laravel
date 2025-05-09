@@ -3,11 +3,13 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Imports\SiswaImport;
 use App\Models\Siswa;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Maatwebsite\Excel\Facades\Excel;
 
 class AdminController extends Controller
 {
@@ -18,9 +20,10 @@ class AdminController extends Controller
             ->with(['user' => function ($query) {
                 $query->select('id', 'name', 'email', 'roles');
             }])
-            ->get();
+            ->latest()->paginate(20);
         return response()->json([
             'message' => 'Data Siswa',
+            'total_siswa' => $siswa->count(),
             'status' => 'success',
             'code' => 200,
             'data' => $siswa,
@@ -164,16 +167,16 @@ class AdminController extends Controller
     public function detailSiswa($id)
     {
 
-        $user = User::with([
-            'siswa' => function ($query) {
-                $query->select('id', 'user_id', 'nama', 'nis', 'kelas', 'jurusan');
+        $user = Siswa::with([
+            'user' => function ($query) {
+                $query->select('id', 'name', 'email', 'roles');
             },
-            'lokasi' => function ($query) {
-                $query->select('id', 'user_id', 'nama_instansi', 'alamat');
+            'lokasiPrakerin' => function ($query) {
+                $query->select('id', 'nama_instansi', 'alamat');
             }
         ])
             ->where('id', $id)
-            ->select('id', 'name', 'email', 'roles')
+            ->select('user_id', 'lokasi_prakerin_id', 'nama', 'nis', 'kelas', 'jurusan', 'no_hp', 'alamat',)
             ->first();
 
         if (!$user) {
@@ -197,6 +200,45 @@ class AdminController extends Controller
         } catch (\Throwable $th) {
             response()->json([
                 'message' => 'Failed to get siswa',
+                'status' => 'error',
+                'code' => 500,
+                'data' => $th->getMessage(),
+            ]);
+        }
+    }
+
+    public function siswaImport(Request $request)
+    {
+
+        $request->validate([
+            'file' => 'required|mimes:xlsx,xls,csv|max:2048',
+        ]);
+        try {
+            DB::beginTransaction();
+
+            $importSiswa = Excel::import(new SiswaImport, $request->file('file'));
+
+            if ($importSiswa) {
+                DB::commit();
+                return response()->json([
+                    'message' => 'Siswa imported successfully',
+                    'status' => 'success',
+                    'code' => 200,
+                    'data' => $importSiswa,
+                ]);
+            } else {
+                DB::rollBack();
+                return response()->json([
+                    'message' => 'Failed to import siswa',
+                    'status' => 'error',
+                    'code' => 500,
+                    'data' => $importSiswa,
+                ]);
+            }
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            return response()->json([
+                'message' => 'Failed to import siswa',
                 'status' => 'error',
                 'code' => 500,
                 'data' => $th->getMessage(),

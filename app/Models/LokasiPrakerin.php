@@ -9,7 +9,7 @@ class LokasiPrakerin extends Model
     protected $table = 'lokasi_prakerins';
     protected $guarded = ['id'];
 
-    public function user()
+    public function siswa()
     {
         return $this->hasMany(User::class);
     }

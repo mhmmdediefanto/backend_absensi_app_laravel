@@ -11,7 +11,7 @@ Generate laporan absensi	        ✅	    ✅	    ✅
 1. kelola data siswa    
     - Create single siswa ✅
     - Hapus Siswa ✅
-    - Import siswa csv/exel
+    - Import siswa csv/exel ✅
     - Detail Siswa User ✅
 2. Kelola Data Guru
     - Create Guru
