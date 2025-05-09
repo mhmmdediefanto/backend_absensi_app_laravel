@@ -24,7 +24,8 @@ Route::prefix('admin')->middleware(['auth:sanctum', 'is_admin'])->group(function
 
     Route::get('/get-guru', [AdminGuruController::class, 'getGuru']);
     Route::delete('/guru-delete/{id}', [AdminGuruController::class, 'delete']);
-
+    Route::post('/create-guru', [AdminGuruController::class, 'createGuru']);
+    Route::post('/guru-import', [AdminGuruController::class, 'importGuru']);
 });
 
 Route::prefix('siswa')->middleware(['auth:sanctum', 'is_siswa'])->group(function () {

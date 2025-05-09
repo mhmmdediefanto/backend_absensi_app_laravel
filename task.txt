@@ -6,6 +6,8 @@ Melihat absensi	                    ✅	    ✅	    ✅
 Melakukan absensi (lokasi & wajah)	❌	    ❌	    ✅
 Verifikasi lokasi dan wajah	        ✅	    ✅	    ❌
 Generate laporan absensi	        ✅	    ✅	    ✅
+kelola pembimbing                   ✅       ❌       ❌
+kelola anak bimbing                 ❌       ✅       ❌
 
 ==== Fitur Admin ====
 1. kelola data siswa    
@@ -15,8 +17,10 @@ Generate laporan absensi	        ✅	    ✅	    ✅
     - Detail Siswa User ✅
 2. Kelola Data Guru
     - Create Guru ✅
-    - Hapus Guru
-    - Import Guru csv/exel
-    - Detail Guru
-3. 
+    - Hapus Guru ✅
+    - Import Guru csv/exel ✅
+3. kelola lokasi prakerin
+    - Create Lokasi prakerin
+    - edit lokasi prakerin
+    - delete lokasi prakerin
 ===== End Admin =====

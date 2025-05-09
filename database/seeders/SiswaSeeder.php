@@ -118,7 +118,6 @@ class SiswaSeeder extends Seeder
                 'no_hp' => $siswa['no_hp'],
                 'alamat' => $siswa['alamat'],
                 'foto_wajah' => $siswa['foto_wajah'],
-                'lokasi_prakerin_id' => rand(1, 10) ?? null,
                 'created_at' => now(),
                 'updated_at' => now()
             ]);

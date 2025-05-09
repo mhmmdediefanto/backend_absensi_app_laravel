@@ -22,6 +22,7 @@ class GuruSeeder extends Seeder
                 'nip' => '1234567890',
                 'no_hp' => '08123456789',
                 'email' => 'mahmud@gmail.com',
+                'jabatan' => 'Kepala Sekolah',
                 'password' => 'guru123'
             ],
             [
@@ -29,6 +30,7 @@ class GuruSeeder extends Seeder
                 'nip' => '9876543210',
                 'no_hp' => '08234567890',
                 'email' => 'ani@gmail.com',
+                'jabatan' => 'Wali Kelas',
                 'password' => 'guru456'
             ]
         ];
@@ -44,7 +46,9 @@ class GuruSeeder extends Seeder
                 'user_id' => $user->id,
                 'nama' => $guru['nama'],
                 'nip' => $guru['nip'],
-                'no_hp' => $guru['no_hp']
+                'no_hp' => $guru['no_hp'],
+                'jabatan' => $guru['jabatan'],
+                'foto' => null, // Set default foto to null or provide a default image path
             ]);
         }
     }
