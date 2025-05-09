@@ -17,6 +17,15 @@ return new class extends Migration
             $table->string('alamat');
             $table->decimal('latitude', 10, 6)->nullable();
             $table->decimal('longitude', 10, 6)->nullable();
+            $table->string('kontak_person')->nullable();
+            $table->string('no_telp', 20)->nullable();
+            $table->string('email')->nullable();
+            $table->string('website')->nullable();
+            $table->string('bidang_usaha')->nullable();
+            $table->integer('kapasitas_siswa')->nullable();
+            $table->boolean('status_kerjasama')->default(true);
+            $table->date('mulai_kerjasama')->nullable();
+
             $table->timestamps();
         });
     }

@@ -17,7 +17,7 @@ return new class extends Migration
             $table->foreign('pembimbing_id')->references('id')->on('pembimbings')->onDelete('cascade');
             $table->unsignedBigInteger('siswa_id');
             $table->foreign('siswa_id')->references('id')->on('siswas')->onDelete('cascade');
-            $table->string('status')->nullable();
+            $table->enum('status', ['aktif', 'selsai', 'ditolak', 'dikeluarkan'])->default('aktif');
             $table->string('keterangan')->nullable();
             $table->timestamps();
         });
