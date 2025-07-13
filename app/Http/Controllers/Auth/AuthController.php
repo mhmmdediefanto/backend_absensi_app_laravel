@@ -92,11 +92,6 @@ class AuthController extends Controller
     public function logout(Request $request)
     {
         try {
-            $user = User::find($request->user()->id);
-            if (!$user) {
-                return response()->json(['message' => 'Unauthorized'], 401);
-            }
-            Auth::logout();
             $request->session()->invalidate();
             $request->session()->regenerateToken();
 
