@@ -4,35 +4,26 @@ use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Admin\AdminGuruController;
 use App\Http\Controllers\Admin\AdminLokasiPrakerinController;
 use App\Http\Controllers\Auth\AuthController;
-use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
-use Illuminate\Cookie\Middleware\EncryptCookies;
+use App\Http\Controllers\Siswa\SiswaController;
 use Illuminate\Support\Facades\Route;
-use Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful;
 
-Route::middleware([
-    EnsureFrontendRequestsAreStateful::class,
-    EncryptCookies::class,
-    AddQueuedCookiesToResponse::class,
-    'api'
-])->group(function () {
+Route::middleware('api-session')->group(function () {
 
     Route::prefix('auth')->group(function () {
         // ✅ Login & Logout sekarang berada di group yang punya middleware session
         Route::post('/login', [AuthController::class, 'authenticate']);
-        Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
+        Route::post('/logout', [AuthController::class, 'logout']);
         Route::get('/me', [AuthController::class, 'me'])->middleware('auth:sanctum');
     });
 
     // 🧑‍🏫 Guru
     Route::prefix('guru')->middleware(['auth:sanctum', 'is_guru'])->group(function () {
-        Route::get('/get-guru', [AdminGuruController::class, 'getGuru']);
+        // Route::get('/get-guru', [AdminGuruController::class, 'getGuru']);
     });
 
     // 👨‍🎓 Siswa
     Route::prefix('siswa')->middleware(['auth:sanctum', 'is_siswa'])->group(function () {
-        Route::get('/get-siswa', fn() => response()->json([
-            'users' => \App\Models\Siswa::all()
-        ]));
+        Route::post('/registered-face', [SiswaController::class, 'registeredFace']);
     });
 
     // 🧑‍💼 Admin

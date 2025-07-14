@@ -18,7 +18,7 @@ class SiswaSeeder extends Seeder
         $dataSiswa = [
             [
                 'nama' => 'Muhammad Rizky',
-                'email' => 'rizky@gmailcom',
+                'email' => 'rizky@gmail.com',
                 'password' => 'rizky123',
                 'nis' => '2123300001',
                 'kelas' => 'XII RPL 1',
@@ -30,7 +30,7 @@ class SiswaSeeder extends Seeder
             ],
             [
                 'nama' => 'Ani',
-                'email' => 'ani@gmailcom',
+                'email' => 'anirahmat@gmail.com',
                 'password' => 'ani123',
                 'nis' => '2123300002',
                 'kelas' => 'XII RPL 1',
@@ -42,7 +42,7 @@ class SiswaSeeder extends Seeder
             ],
             [
                 'nama' => 'Budi',
-                'email' => 'budi@gmailcom',
+                'email' => 'budi@gmail.com',
                 'password' => 'budi123',
                 'nis' => '2123300003',
                 'kelas' => 'XII RPL 1',
@@ -55,7 +55,7 @@ class SiswaSeeder extends Seeder
             [
                 'nama' => 'Caca',
                 'password' => 'caca123',
-                'email' => 'caca@gmailcom',
+                'email' => 'caca@gmail.com',
                 'nis' => '2123300004',
                 'kelas' => 'XII RPL 1',
                 'jurusan' => 'Rekayasa Perangkat Lunak',
@@ -67,7 +67,7 @@ class SiswaSeeder extends Seeder
             [
                 'nama' => 'Dedi',
                 'password' => 'dedi123',
-                'email' => 'dedi@gmailcom',
+                'email' => 'dedi@gmail.com',
                 'nis' => '2123300005',
                 'kelas' => 'XII RPL 1',
                 'jurusan' => 'Rekayasa Perangkat Lunak',
@@ -79,7 +79,7 @@ class SiswaSeeder extends Seeder
             [
                 'nama' => 'Eka',
                 'password' => 'eka123',
-                'email' => 'eka@gmailcom',
+                'email' => 'eka@gmail.com',
                 'nis' => '2123300006',
                 'kelas' => 'XII RPL 1',
                 'jurusan' => 'Rekayasa Perangkat Lunak',
@@ -91,7 +91,7 @@ class SiswaSeeder extends Seeder
             [
                 'nama' => 'Feri',
                 'password' => 'feri123',
-                'email' => 'feri@gmailcom',
+                'email' => 'feri@gmail.com',
                 'nis' => '2123300007',
                 'kelas' => 'XII RPL 1',
                 'jurusan' => 'Rekayasa Perangkat Lunak',
