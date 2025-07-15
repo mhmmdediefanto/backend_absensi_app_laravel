@@ -52,16 +52,16 @@ class AuthController extends Controller
                 ], 401);
             }
 
+            // return response($user);
 
-            // Hapus token lama dan buat yang baru
-            $user->tokens()->delete();
+            // ✅ Login menggunakan session (cookie-based)
+            Auth::login($user); // akan membuat session
 
-            $token = $user->createToken('auth_token')->plainTextToken;
+            $request->session()->regenerate(); // hindari session fixation
 
             return response()->json([
                 'message' => 'Login berhasil',
                 'user' => $user,
-                'token' => $token
             ]);
         } catch (\Throwable $th) {
             return response()->json(['message' => $th->getMessage()], 500);
@@ -92,12 +92,9 @@ class AuthController extends Controller
     public function logout(Request $request)
     {
         try {
-            $user = User::find($request->user()->id);
-            if (!$user) {
-                return response()->json(['message' => 'Unauthorized'], 401);
-            }
-            // Hapus semua token yang dimiliki user
-            $user->tokens()->delete();
+            Auth::guard('web')->logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
 
             return response()->json([
                 'message' => 'Logout berhasil'

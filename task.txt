@@ -20,7 +20,8 @@ kelola anak bimbing                 ❌       ✅       ❌
     - Hapus Guru ✅
     - Import Guru csv/exel ✅
 3. kelola lokasi prakerin
-    - Create Lokasi prakerin
+    - get all lokasi prakerin ✅
+    - Create Lokasi prakerin ✅
     - edit lokasi prakerin
-    - delete lokasi prakerin
+    - delete lokasi prakerin ✅
 ===== End Admin =====
