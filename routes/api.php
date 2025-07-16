@@ -30,6 +30,7 @@ Route::middleware('api-session')->group(function () {
     Route::prefix('admin')->middleware(['auth:sanctum', 'is_admin'])->group(function () {
         Route::get('/get-siswa', [AdminController::class, 'getSiswa']);
         Route::post('/create-siswa', [AdminController::class, 'createSiswa']);
+        Route::put('/update-siswa/{id}', [AdminController::class, 'updateSiswa']);
         Route::delete('/delete-siswa/{id}', [AdminController::class, 'deleteSiswa']);
         Route::get('/detail-siswa/{id}', [AdminController::class, 'detailSiswa']);
         Route::post('/siswa-import', [AdminController::class, 'siswaImport']);
@@ -37,6 +38,7 @@ Route::middleware('api-session')->group(function () {
         Route::get('/get-guru', [AdminGuruController::class, 'getGuru']);
         Route::delete('/guru-delete/{id}', [AdminGuruController::class, 'delete']);
         Route::post('/create-guru', [AdminGuruController::class, 'createGuru']);
+        Route::put('/update-guru/{id}', [AdminGuruController::class, 'updateGuru']);
         Route::post('/guru-import', [AdminGuruController::class, 'importGuru']);
 
         Route::get('/get-lokasi-prakerin', [AdminLokasiPrakerinController::class, 'getAllLokasiPrakerin']);

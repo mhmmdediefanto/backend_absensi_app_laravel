@@ -146,4 +146,79 @@ class AdminGuruController extends Controller
             ]);
         }
     }
+
+    public function updateGuru(Request $request, $id)
+    {
+        $guru = Guru::find($id);
+        if (!$guru) {
+            return response()->json([
+                'message' => 'Guru not found',
+                'status' => 'error',
+                'code' => 404,
+            ]);
+        }
+        $user = User::find($guru->user_id);
+        if (!$user) {
+            return response()->json([
+                'message' => 'User not found',
+                'status' => 'error',
+                'code' => 404,
+            ]);
+        }
+        try {
+            DB::beginTransaction();
+            $validatedData = $request->validate([
+                'name' => 'required|string|max:255',
+                'email' => 'required|email|unique:users,email,' . $user->id,
+                'nama' => 'required|string|max:255',
+                'nip' => 'required|string|max:255|unique:gurus,nip,' . $guru->id,
+                'no_hp' => 'required|string|max:255',
+                'jabatan' => 'required|string|max:255',
+                'foto' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            ]);
+
+            // Handle file upload if provided
+            if ($request->hasFile('foto')) {
+                // Delete old photo if exists
+                if ($guru->foto) {
+                    Storage::disk('public')->delete($guru->foto);
+                }
+                $validatedData['foto'] = $request->file('foto')->store('uploads/guru', 'public');
+            } else {
+                $validatedData['foto'] = $guru->foto;
+            }
+
+            // Update user
+            $user->name = $validatedData['name'];
+            $user->email = $validatedData['email'];
+            $user->save();
+
+            // Update guru
+            $guru->nama = $validatedData['nama'];
+            $guru->nip = $validatedData['nip'];
+            $guru->no_hp = $validatedData['no_hp'];
+            $guru->jabatan = $validatedData['jabatan'];
+            $guru->foto = $validatedData['foto'];
+            $guru->save();
+
+            DB::commit();
+            return response()->json([
+                'message' => 'Guru updated successfully',
+                'status' => 'success',
+                'code' => 200,
+                'data' => [
+                    'user' => $user,
+                    'guru' => $guru,
+                ],
+            ]);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            return response()->json([
+                'message' => 'Failed to update guru',
+                'status' => 'error',
+                'code' => 500,
+                'data' => $th->getMessage(),
+            ]);
+        }
+    }
 }

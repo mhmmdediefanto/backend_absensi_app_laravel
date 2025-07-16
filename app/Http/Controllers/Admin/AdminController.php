@@ -16,14 +16,14 @@ class AdminController extends Controller
     public function getSiswa()
     {
 
-        $siswa = Siswa::select('id', 'user_id', 'nama', 'nis', 'kelas', 'jurusan')
+        $siswa = Siswa::select('id', 'user_id', 'nama', 'nis', 'kelas', 'jurusan', 'no_hp','alamat')
             ->with(['user' => function ($query) {
                 $query->select('id', 'name', 'email', 'roles');
             }])
-            ->latest()->paginate(20);
+            ->latest()->paginate(10);
         return response()->json([
             'message' => 'Data Siswa',
-            'total_siswa' => $siswa->count(),
+            'total_siswa' => $siswa->total(),
             'status' => 'success',
             'code' => 200,
             'data' => $siswa,
@@ -39,7 +39,6 @@ class AdminController extends Controller
             $validatedData = $request->validate([
                 'nama' => 'required|string|max:255',
                 'email' => 'required|email|unique:users,email',
-                'password' => 'required|string|min:8',
                 'nis' => 'required|string|max:255',
                 'kelas' => 'required|string|max:255',
                 'jurusan' => 'required|string|max:255',
@@ -75,14 +74,14 @@ class AdminController extends Controller
                 $validatedData['foto_wajah'] = null;
             }
 
-            $validatedData['password'] = bcrypt($validatedData['password']);
+            $validatedData['password'] = bcrypt($validatedData['nis']);
             $validatedData['roles'] = 'siswa';
 
 
 
             $user = User::create([
                 'email' => $validatedData['email'],
-                'password' => $validatedData['password'],
+                'password' => $validatedData['nis'],
                 'name' => $validatedData['nama'],
                 'roles' => $validatedData['roles'],
             ]);
@@ -236,6 +235,84 @@ class AdminController extends Controller
             DB::rollBack();
             return response()->json([
                 'message' => 'Failed to import siswa',
+                'status' => 'error',
+                'code' => 500,
+                'data' => $th->getMessage(),
+            ]);
+        }
+    }
+
+    public function updateSiswa(Request $request, $id)
+    {
+        $siswa = Siswa::find($id);
+        if (!$siswa) {
+            return response()->json([
+                'message' => 'Siswa not found',
+                'status' => 'error',
+                'code' => 404,
+            ]);
+        }
+        $user = User::find($siswa->user_id);
+        if (!$user) {
+            return response()->json([
+                'message' => 'User not found',
+                'status' => 'error',
+                'code' => 404,
+            ]);
+        }
+        try {
+            DB::beginTransaction();
+            $validatedData = $request->validate([
+                'nama' => 'required|string|max:255',
+                'email' => 'required|email|unique:users,email,' . $user->id,
+                'nis' => 'required|string|max:255|unique:siswas,nis,' . $siswa->id,
+                'kelas' => 'required|string|max:255',
+                'jurusan' => 'required|string|max:255',
+                'no_hp' => 'nullable|string|max:15',
+                'alamat' => 'nullable|string|max:255',
+                'foto_wajah' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            ]);
+
+            // Handle file upload if provided
+            if ($request->hasFile('foto_wajah')) {
+                // Delete old photo if exists
+                if ($siswa->foto_wajah) {
+                    Storage::disk('public')->delete($siswa->foto_wajah);
+                }
+                $validatedData['foto_wajah'] = $request->file('foto_wajah')->store('uploads/siswa', 'public');
+            } else {
+                $validatedData['foto_wajah'] = $siswa->foto_wajah;
+            }
+
+            // Update user
+            $user->name = $validatedData['nama'];
+            $user->email = $validatedData['email'];
+            $user->save();
+
+            // Update siswa
+            $siswa->nama = $validatedData['nama'];
+            $siswa->nis = $validatedData['nis'];
+            $siswa->kelas = $validatedData['kelas'];
+            $siswa->jurusan = $validatedData['jurusan'];
+            $siswa->no_hp = $validatedData['no_hp'];
+            $siswa->alamat = $validatedData['alamat'];
+            $siswa->foto_wajah = $validatedData['foto_wajah'];
+            $siswa->save();
+
+            DB::commit();
+            return response()->json([
+                'message' => 'Siswa updated successfully',
+                'status' => 'success',
+                'code' => 200,
+                'data' => [
+                    'user' => $user,
+                    'siswa' => $siswa,
+                ],
+            ]);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            return response()->json([
+                'message' => 'Failed to update siswa',
                 'status' => 'error',
                 'code' => 500,
                 'data' => $th->getMessage(),

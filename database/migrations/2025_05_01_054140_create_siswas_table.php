@@ -19,8 +19,8 @@ return new class extends Migration
             $table->string('nis', 100)->unique();
             $table->string('kelas', 100);
             $table->string('jurusan', 225);
-            $table->string('no_hp', 100);
-            $table->string('alamat', 255);
+            $table->string('no_hp', 100)->nullable();
+            $table->string('alamat', 255)->nullable();
             $table->text('foto_wajah')->nullable();
             $table->timestamps();
         });
