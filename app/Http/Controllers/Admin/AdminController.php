@@ -16,7 +16,7 @@ class AdminController extends Controller
     public function getSiswa()
     {
 
-        $siswa = Siswa::select('id', 'user_id', 'nama', 'nis', 'kelas', 'jurusan', 'no_hp','alamat')
+        $siswa = Siswa::select('id', 'user_id', 'nama', 'nis', 'kelas', 'jurusan', 'no_hp', 'alamat')
             ->with(['user' => function ($query) {
                 $query->select('id', 'name', 'email', 'roles');
             }])
@@ -39,34 +39,22 @@ class AdminController extends Controller
             $validatedData = $request->validate([
                 'nama' => 'required|string|max:255',
                 'email' => 'required|email|unique:users,email',
-                'nis' => 'required|string|max:255',
+                'nis' => 'required|string|max:255|unique:siswas,nis',
                 'kelas' => 'required|string|max:255',
                 'jurusan' => 'required|string|max:255',
                 'no_hp' => 'nullable|string|max:15',
                 'alamat' => 'nullable|string|max:255',
                 'foto_wajah' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            ], [
+                'email' => [
+                    'unique' => 'Maaf Email sudah terdaftar'
+                ],
+                'nis' => [
+                    'unique' => 'Maaf NIS sudah terdaftar'
+                ]
             ]);
 
             // dd($validatedData);
-
-            // Check if the user already exists
-            $existingUserEmail = User::where('email', $validatedData['email'])->first();
-            if ($existingUserEmail) {
-                return response()->json([
-                    'message' => 'Email already exists',
-                    'status' => 'error',
-                    'code' => 422,
-                ]);
-            }
-
-            $existingUserNis = Siswa::where('nis', $validatedData['nis'])->first();
-            if ($existingUserNis) {
-                return response()->json([
-                    'message' => 'NIS already exists',
-                    'status' => 'error',
-                    'code' => 422,
-                ]);
-            }
             // Handle file upload if provided
             if ($request->hasFile('foto_wajah')) {
                 $validatedData['foto_wajah'] = $request->file('foto_wajah')->store('uploads/siswa', 'public');

@@ -16,10 +16,11 @@ class AdminGuruController extends Controller
 {
     public function getGuru()
     {
-        $guru = Guru::select('nama', 'nip', 'no_hp', 'jabatan')->latest()->paginate(10);
+        $guru = Guru::with('user')->select('id','nama', 'user_id' , 'nip', 'no_hp', 'jabatan')->latest()->paginate(10);
         return response()->json([
             'message' => 'Guru retrieved successfully',
             'status' => 'success',
+            'total_guru' => $guru->total(),
             'code' => 200,
             'data' => $guru,
         ]);
@@ -32,32 +33,22 @@ class AdminGuruController extends Controller
             $validatedData = $request->validate([
                 'name' => 'required|string|max:255',
                 'email' => 'required|email|unique:users,email',
-                'password' => 'required|string|min:8',
                 'roles' => 'nullable|string|in:guru',
                 'nama' => 'required|string|max:255',
                 'nip' => 'required|string|max:255|unique:gurus,nip',
                 'no_hp' => 'required|string|max:255',
                 'foto' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
                 'jabatan' => 'required|string|max:255',
+            ], [
+
+                'email' => [
+                    'unique' => "Maaf Email ini sudah terdaftarkan"
+                ],
+                'nip' => [
+                    'unique' => "Maaf NIP ini sudah terdaftarkan"
+                ]
             ]);
 
-            $cekEmailGuru = User::where('email', $request->email)->first();
-            if ($cekEmailGuru) {
-                return response()->json([
-                    'message' => 'Email already exists',
-                    'status' => 'error',
-                    'code' => 422,
-                ]);
-            }
-
-            $cekNipGuru = Guru::where('nip', $request->nip)->first();
-            if ($cekNipGuru) {
-                return response()->json([
-                    'message' => 'NIP already exists',
-                    'status' => 'error',
-                    'code' => 422,
-                ]);
-            }
             if ($request->hasFile('foto')) {
                 $validatedData['foto'] = $request->file('foto')->store('uploads/guru', 'public');
             }
@@ -66,7 +57,7 @@ class AdminGuruController extends Controller
             $users = User::create([
                 'name' => $validatedData['name'],
                 'email' => $validatedData['email'],
-                'password' => Hash::make($validatedData['password']),
+                'password' => Hash::make($validatedData['nip']),
                 'roles' => $validatedData['roles'] ?? 'guru',
             ]);
             $guru = Guru::create([
