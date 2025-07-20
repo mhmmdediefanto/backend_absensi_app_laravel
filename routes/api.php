@@ -14,6 +14,8 @@ Route::middleware('api-session')->group(function () {
         Route::post('/login', [AuthController::class, 'authenticate']);
         Route::post('/logout', [AuthController::class, 'logout']);
         Route::get('/me', [AuthController::class, 'me'])->middleware('auth:sanctum');
+        // change password
+        Route::put('/password_changed_at/{id}', [AuthController::class, 'password_changed'])->middleware('auth:sanctum');
     });
 
     // 🧑‍🏫 Guru
@@ -44,6 +46,8 @@ Route::middleware('api-session')->group(function () {
         Route::get('/get-lokasi-prakerin', [AdminLokasiPrakerinController::class, 'getAllLokasiPrakerin']);
         Route::post('/create-lokasi-prakerin', [AdminLokasiPrakerinController::class, 'createLokasiPrakerin']);
         Route::delete('/delete-lokasi-prakerin/{id}', [AdminLokasiPrakerinController::class, 'deleteLokasiPrakerin']);
+        Route::post("/import-lokasi", [AdminLokasiPrakerinController::class, 'importLokasi']);
+        Route::get("/detail-lokasi/{id}", [AdminLokasiPrakerinController::class, 'detailLokasi']);
     });
 });
 

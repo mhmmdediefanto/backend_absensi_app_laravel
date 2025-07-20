@@ -25,7 +25,11 @@ return new class extends Migration
             $table->integer('kapasitas_siswa')->nullable();
             $table->boolean('status_kerjasama')->default(true);
             $table->date('mulai_kerjasama')->nullable();
-
+            $table->decimal('radius_absen', 8, 2)->default(100); // meter
+            $table->string('foto_instansi')->nullable();
+            $table->boolean('status_aktif')->default(true);
+            $table->text('deskripsi')->nullable();
+            $table->string('jenis_instansi')->nullable();
             $table->timestamps();
         });
     }

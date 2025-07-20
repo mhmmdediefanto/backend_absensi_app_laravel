@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Imports\SiswaImport;
+use App\Models\ImportLog;
 use App\Models\Siswa;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -18,7 +19,7 @@ class AdminController extends Controller
 
         $siswa = Siswa::select('id', 'user_id', 'nama', 'nis', 'kelas', 'jurusan', 'no_hp', 'alamat')
             ->with(['user' => function ($query) {
-                $query->select('id', 'name', 'email', 'roles');
+                $query->select('id', 'name', 'email', 'roles', 'password_changed_at');
             }])
             ->latest()->paginate(10);
         return response()->json([
@@ -194,41 +195,29 @@ class AdminController extends Controller
     public function siswaImport(Request $request)
     {
 
+
         $request->validate([
-            'file' => 'required|mimes:xlsx,xls,csv|max:2048',
+            'file' => 'required|mimes:xlsx,xls,csv',
         ]);
+
         try {
-            DB::beginTransaction();
 
-            $importSiswa = Excel::import(new SiswaImport, $request->file('file'));
+            Excel::import(new SiswaImport, $request->file('file'));
 
-            if ($importSiswa) {
-                DB::commit();
-                return response()->json([
-                    'message' => 'Siswa imported successfully',
-                    'status' => 'success',
-                    'code' => 200,
-                    'data' => $importSiswa,
-                ]);
-            } else {
-                DB::rollBack();
-                return response()->json([
-                    'message' => 'Failed to import siswa',
-                    'status' => 'error',
-                    'code' => 500,
-                    'data' => $importSiswa,
-                ]);
-            }
-        } catch (\Throwable $th) {
-            DB::rollBack();
+            return response()->json([
+                'message' => 'Berhasil Import',
+            ], 200);
+
+        } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Failed to import siswa',
                 'status' => 'error',
                 'code' => 500,
-                'data' => $th->getMessage(),
+                'error' => $e->getMessage(),
             ]);
         }
     }
+
 
     public function updateSiswa(Request $request, $id)
     {

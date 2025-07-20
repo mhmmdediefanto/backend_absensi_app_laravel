@@ -16,7 +16,9 @@ class AdminGuruController extends Controller
 {
     public function getGuru()
     {
-        $guru = Guru::with('user')->select('id','nama', 'user_id' , 'nip', 'no_hp', 'jabatan')->latest()->paginate(10);
+        $guru = Guru::with(['user' => function ($query) {
+            $query->select('id', 'name', 'email', 'roles', 'password_changed_at');
+        }])->select('id', 'nama', 'user_id', 'nip', 'no_hp', 'jabatan')->latest()->paginate(10);
         return response()->json([
             'message' => 'Guru retrieved successfully',
             'status' => 'success',
@@ -112,28 +114,21 @@ class AdminGuruController extends Controller
     {
         try {
 
-            DB::beginTransaction();
             $validatedData = $request->validate([
                 'file' => 'required|mimes:xlsx,xls,csv|max:2048',
             ]);
 
-
-
-            $filesGuru = Excel::import(new GuruImport, $validatedData['file']);
-            if ($filesGuru) {
-                DB::commit();
-                return response()->json([
-                    'message' => 'Guru imported successfully',
-                    'status' => 'success',
-                    'code' => 200,
-                ]);
-            }
-        } catch (\Throwable $th) {
-            DB::rollback();
+            Excel::import(new GuruImport, $validatedData['file']);
             return response()->json([
-                'message' => $th->getMessage(),
+                'message' => 'Berhasil Import',
+            ], 200);
+        } catch (\Exception $th) {
+
+            return response()->json([
+                'message' => 'Failed to import guru',
                 'status' => 'error',
                 'code' => 500,
+                'error' => $th->getMessage(),
             ]);
         }
     }
