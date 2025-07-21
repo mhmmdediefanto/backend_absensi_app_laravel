@@ -4,116 +4,73 @@ namespace App\Imports;
 
 use App\Models\Siswa;
 use App\Models\User;
-use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
-use Maatwebsite\Excel\Concerns\ToCollection;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
+use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
+use Maatwebsite\Excel\Concerns\WithChunkReading;
 
-class SiswaImport implements ToCollection, WithHeadingRow
+class SiswaImport implements ToModel, WithHeadingRow, WithChunkReading
 {
-    /**
-     * @param Collection $collection
-     */
-    public function collection(Collection $rows)
+    protected $existingEmails = [];
+    protected $existingNis = [];
+    protected $defaultPassword;
+
+    public function __construct()
     {
-        DB::enableQueryLog();
-        // Ambil semua email dan NIS yang sudah ada di database
-        $existingEmails = User::pluck('email')->toArray();
-        $existingNis = Siswa::pluck('nis')->toArray();
+        // Cache semua email dan NIS dari database
+        $this->existingEmails = User::pluck('email')->toArray();
+        $this->existingNis = Siswa::pluck('nis')->toArray();
+        $this->defaultPassword = Hash::make('Skahada2');
+    }
 
-        $usersToInsert = [];
-        $siswasToInsert = [];
-        $errors = [];
-        $now = now();
-
-        // Deteksi duplikat di file (CSV) dengan hashmap
-        $fileEmails = [];
-        $fileNis = [];
-
-        foreach ($rows as $index => $row) {
-            // Cek duplikat di file (CSV) dengan hashmap
-            if (isset($fileEmails[$row['email']])) {
-                $errors[] = [
-                    'row' => $index + 2,
-                    'message' => 'Duplicate email in file: ' . $row['email'],
-                ];
-                continue;
+    public function model(array $row)
+    {
+        try {
+            if (empty($row['email']) || empty($row['nis']) || empty($row['nama'])) {
+                throw new \Exception('Wajib isi kolom: email / nis / nama');
             }
-            if (isset($fileNis[$row['nis']])) {
-                $errors[] = [
-                    'row' => $index + 2,
-                    'message' => 'Duplicate NIS in file: ' . $row['nis'],
-                ];
-                continue;
+
+            if (in_array($row['email'], $this->existingEmails)) {
+                throw new \Exception('Email sudah ada: ' . $row['email']);
             }
-            $fileEmails[$row['email']] = true;
-            $fileNis[$row['nis']] = true;
 
-            // Cek duplikat di database
-            if (in_array($row['email'], $existingEmails)) {
-                $errors[] = [
-                    'row' => $index + 2, // +2 karena heading row dan index mulai 0
-                    'message' => 'Email already exists: ' . $row['email'],
-                ];
-                continue;
+            if (in_array($row['nis'], $this->existingNis)) {
+                throw new \Exception('NIS sudah ada: ' . $row['nis']);
             }
-            if (in_array($row['nis'], $existingNis)) {
-                $errors[] = [
-                    'row' => $index + 2,
-                    'message' => 'NIS already exists: ' . $row['nis'],
-                ];
-                continue;
-            }
-            $usersToInsert[] = [
-                'name' => $row['name'],
-                'email' => $row['email'],
-                'password' => Hash::make($row['nis']),
-                'roles' => 'siswa',
-                'created_at' => $now,
-                'updated_at' => $now,
-            ];
-        }
 
-        // Insert users secara massal
-        $insertedUsers = [];
-        if (!empty($usersToInsert)) {
-            User::insert($usersToInsert);
-            // Ambil user yang baru diinsert
-            $insertedUsers = User::whereIn('email', array_column($usersToInsert, 'email'))->get();
-        }
+            // Tambahkan ke array agar tidak dobel di batch berikutnya
+            $this->existingEmails[] = $row['email'];
+            $this->existingNis[] = $row['nis'];
 
-        // Siapkan data siswa untuk insert massal
-        foreach ($insertedUsers as $user) {
-            // Cari row yang sesuai
-            foreach ($rows as $row) {
-                if ($row['email'] === $user->email) {
-                    $siswasToInsert[] = [
-                        'user_id' => $user->id,
-                        'nama' => $row['nama'],
-                        'nis' => $row['nis'],
-                        'kelas' => $row['kelas'],
-                        'jurusan' => $row['jurusan'],
-                        'no_hp' => $row['no_hp'],
-                        'alamat' => $row['alamat'],
-                        'foto_wajah' => $row['foto_wajah'] ?? null,
-                        'created_at' => $now,
-                        'updated_at' => $now,
-                    ];
-                    break;
-                }
-            }
-        }
 
-        if (!empty($siswasToInsert)) {
-            Siswa::insert($siswasToInsert);
-        }
+            // Insert user & siswa tanpa nested transaction
+            $user = User::create([
+                'name'      => $row['nama'],
+                'email'     => $row['email'],
+                'password'  => $this->defaultPassword,
+                'roles'     => 'siswa',
+            ]);
 
-        if (!empty($errors)) {
-            // Kembalikan semua error sekaligus
-            throw new \Exception(json_encode($errors));
+            Siswa::create([
+                'user_id'    => $user->id,
+                'nama'       => $row['nama'],
+                'nis'        => $row['nis'],
+                'kelas'      => $row['kelas'] ?? null,
+                'jurusan'    => $row['jurusan'] ?? null,
+                'no_hp'      => $row['no_hp'] ?? null,
+                'alamat'     => $row['alamat'] ?? null,
+                'foto_wajah' => $row['foto_wajah'] ?? null,
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Gagal import siswa: ' . $e->getMessage(), $row);
+            throw $e;
         }
-        // Tampilkan query log untuk debug bulk insert
-        // dd(DB::getQueryLog());
+    }
+
+    public function chunkSize(): int
+    {
+        return 500;
     }
 }

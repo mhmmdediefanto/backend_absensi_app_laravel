@@ -16,10 +16,13 @@ class AdminGuruController extends Controller
 {
     public function getGuru()
     {
-        $guru = Guru::select('nama', 'nip', 'no_hp', 'jabatan')->latest()->paginate(10);
+        $guru = Guru::with(['user' => function ($query) {
+            $query->select('id', 'name', 'email', 'roles', 'password_changed_at');
+        }])->select('id', 'nama', 'user_id', 'nip', 'no_hp', 'jabatan')->latest()->paginate(10);
         return response()->json([
             'message' => 'Guru retrieved successfully',
             'status' => 'success',
+            'total_guru' => $guru->total(),
             'code' => 200,
             'data' => $guru,
         ]);
@@ -32,32 +35,22 @@ class AdminGuruController extends Controller
             $validatedData = $request->validate([
                 'name' => 'required|string|max:255',
                 'email' => 'required|email|unique:users,email',
-                'password' => 'required|string|min:8',
                 'roles' => 'nullable|string|in:guru',
                 'nama' => 'required|string|max:255',
                 'nip' => 'required|string|max:255|unique:gurus,nip',
                 'no_hp' => 'required|string|max:255',
                 'foto' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
                 'jabatan' => 'required|string|max:255',
+            ], [
+
+                'email' => [
+                    'unique' => "Maaf Email ini sudah terdaftarkan"
+                ],
+                'nip' => [
+                    'unique' => "Maaf NIP ini sudah terdaftarkan"
+                ]
             ]);
 
-            $cekEmailGuru = User::where('email', $request->email)->first();
-            if ($cekEmailGuru) {
-                return response()->json([
-                    'message' => 'Email already exists',
-                    'status' => 'error',
-                    'code' => 422,
-                ]);
-            }
-
-            $cekNipGuru = Guru::where('nip', $request->nip)->first();
-            if ($cekNipGuru) {
-                return response()->json([
-                    'message' => 'NIP already exists',
-                    'status' => 'error',
-                    'code' => 422,
-                ]);
-            }
             if ($request->hasFile('foto')) {
                 $validatedData['foto'] = $request->file('foto')->store('uploads/guru', 'public');
             }
@@ -66,7 +59,7 @@ class AdminGuruController extends Controller
             $users = User::create([
                 'name' => $validatedData['name'],
                 'email' => $validatedData['email'],
-                'password' => Hash::make($validatedData['password']),
+                'password' => Hash::make($validatedData['nip']),
                 'roles' => $validatedData['roles'] ?? 'guru',
             ]);
             $guru = Guru::create([
@@ -121,28 +114,96 @@ class AdminGuruController extends Controller
     {
         try {
 
-            DB::beginTransaction();
             $validatedData = $request->validate([
                 'file' => 'required|mimes:xlsx,xls,csv|max:2048',
             ]);
 
-
-
-            $filesGuru = Excel::import(new GuruImport, $validatedData['file']);
-            if ($filesGuru) {
-                DB::commit();
-                return response()->json([
-                    'message' => 'Guru imported successfully',
-                    'status' => 'success',
-                    'code' => 200,
-                ]);
-            }
-        } catch (\Throwable $th) {
-            DB::rollback();
+            Excel::import(new GuruImport, $validatedData['file']);
             return response()->json([
-                'message' => $th->getMessage(),
+                'message' => 'Berhasil Import',
+            ], 200);
+        } catch (\Exception $th) {
+
+            return response()->json([
+                'message' => 'Failed to import guru',
                 'status' => 'error',
                 'code' => 500,
+                'error' => $th->getMessage(),
+            ]);
+        }
+    }
+
+    public function updateGuru(Request $request, $id)
+    {
+        $guru = Guru::find($id);
+        if (!$guru) {
+            return response()->json([
+                'message' => 'Guru not found',
+                'status' => 'error',
+                'code' => 404,
+            ]);
+        }
+        $user = User::find($guru->user_id);
+        if (!$user) {
+            return response()->json([
+                'message' => 'User not found',
+                'status' => 'error',
+                'code' => 404,
+            ]);
+        }
+        try {
+            DB::beginTransaction();
+            $validatedData = $request->validate([
+                'name' => 'required|string|max:255',
+                'email' => 'required|email|unique:users,email,' . $user->id,
+                'nama' => 'required|string|max:255',
+                'nip' => 'required|string|max:255|unique:gurus,nip,' . $guru->id,
+                'no_hp' => 'required|string|max:255',
+                'jabatan' => 'required|string|max:255',
+                'foto' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            ]);
+
+            // Handle file upload if provided
+            if ($request->hasFile('foto')) {
+                // Delete old photo if exists
+                if ($guru->foto) {
+                    Storage::disk('public')->delete($guru->foto);
+                }
+                $validatedData['foto'] = $request->file('foto')->store('uploads/guru', 'public');
+            } else {
+                $validatedData['foto'] = $guru->foto;
+            }
+
+            // Update user
+            $user->name = $validatedData['name'];
+            $user->email = $validatedData['email'];
+            $user->save();
+
+            // Update guru
+            $guru->nama = $validatedData['nama'];
+            $guru->nip = $validatedData['nip'];
+            $guru->no_hp = $validatedData['no_hp'];
+            $guru->jabatan = $validatedData['jabatan'];
+            $guru->foto = $validatedData['foto'];
+            $guru->save();
+
+            DB::commit();
+            return response()->json([
+                'message' => 'Guru updated successfully',
+                'status' => 'success',
+                'code' => 200,
+                'data' => [
+                    'user' => $user,
+                    'guru' => $guru,
+                ],
+            ]);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            return response()->json([
+                'message' => 'Failed to update guru',
+                'status' => 'error',
+                'code' => 500,
+                'data' => $th->getMessage(),
             ]);
         }
     }

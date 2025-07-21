@@ -14,4 +14,8 @@ class Siswa extends Model
         return $this->belongsTo(User::class, 'user_id');
     }
 
+    public function total()
+    {
+        return $this->count();
+    }
 }

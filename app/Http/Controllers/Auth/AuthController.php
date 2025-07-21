@@ -103,4 +103,21 @@ class AuthController extends Controller
             return response()->json(['message' => $th->getMessage()], 500);
         }
     }
+
+    public function password_changed(Request $request, $id)
+    {
+        $user = User::findOrFail($id);
+
+        // Optional: Pastikan user yang login hanya bisa update dirinya sendiri
+        if ($user->id !== Auth::id()) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        $user->update([
+            'password' => Hash::make($request->password),
+            'password_changed_at' => now(),
+        ]);
+
+        return response()->json(['message' => 'Password berhasil diubah']);
+    }
 }

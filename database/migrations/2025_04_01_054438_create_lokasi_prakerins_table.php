@@ -15,8 +15,8 @@ return new class extends Migration
             $table->id();
             $table->string('nama_instansi', 255);
             $table->string('alamat');
-            $table->decimal('latitude', 10, 6)->nullable();
-            $table->decimal('longitude', 10, 6)->nullable();
+            $table->decimal('latitude', 10, 6);
+            $table->decimal('longitude', 11, 6);
             $table->string('kontak_person')->nullable();
             $table->string('no_telp', 20)->nullable();
             $table->string('email')->nullable();
@@ -25,7 +25,11 @@ return new class extends Migration
             $table->integer('kapasitas_siswa')->nullable();
             $table->boolean('status_kerjasama')->default(true);
             $table->date('mulai_kerjasama')->nullable();
-
+            $table->decimal('radius_absen', 8, 2)->default(100); // meter
+            $table->string('foto_instansi')->nullable();
+            $table->boolean('status_aktif')->default(true);
+            $table->text('deskripsi')->nullable();
+            $table->string('jenis_instansi')->nullable();
             $table->timestamps();
         });
     }
