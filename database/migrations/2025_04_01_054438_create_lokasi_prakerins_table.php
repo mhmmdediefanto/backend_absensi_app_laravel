@@ -15,8 +15,8 @@ return new class extends Migration
             $table->id();
             $table->string('nama_instansi', 255);
             $table->string('alamat');
-            $table->decimal('latitude', 10, 6)->nullable();
-            $table->decimal('longitude', 10, 6)->nullable();
+            $table->decimal('latitude', 10, 6);
+            $table->decimal('longitude', 11, 6);
             $table->string('kontak_person')->nullable();
             $table->string('no_telp', 20)->nullable();
             $table->string('email')->nullable();

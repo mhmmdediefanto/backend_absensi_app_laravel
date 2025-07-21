@@ -47,7 +47,7 @@ class AdminLokasiPrakerinController extends Controller
     {
         try {
             DB::beginTransaction();
-            $validator = Validator::make($request->all(), [
+            $validatedData = $request->validate([
                 'nama_instansi' => 'required|string|max:255',
                 'alamat' => 'required|string|max:255',
                 'latitude' => 'nullable|numeric',
@@ -74,25 +74,6 @@ class AdminLokasiPrakerinController extends Controller
                 'jadwal.*.status_aktif' => 'nullable|boolean',
                 'jadwal.*.keterangan' => 'nullable|string',
             ]);
-            if ($validator->fails()) {
-                return response()->json([
-                    'message' => 'Validation failed',
-                    'status' => 'error',
-                    'code' => 422,
-                    'errors' => $validator->errors(),
-                ], 422);
-            }
-            $validatedData = $validator->validated();
-            $existingLocation = LokasiPrakerin::where('nama_instansi', $validatedData['nama_instansi'])
-                ->where('alamat', $validatedData['alamat'])
-                ->first();
-            if ($existingLocation) {
-                return response()->json([
-                    'message' => 'Data lokasi prakerin already exists',
-                    'status' => 'error',
-                    'code' => 409,
-                ], 409);
-            }
             $jadwalArr = $validatedData['jadwal'];
             unset($validatedData['jadwal']);
             $lokasi = LokasiPrakerin::create($validatedData);
@@ -128,6 +109,7 @@ class AdminLokasiPrakerinController extends Controller
 
     public function updateLokasiPrakerin(Request $request, $id)
     {
+        // dd($request->all());
         $lokasi = LokasiPrakerin::find($id);
         if (!$lokasi) {
             return response()->json([
@@ -136,7 +118,7 @@ class AdminLokasiPrakerinController extends Controller
                 'code' => 404,
             ], 404);
         }
-        $validator = Validator::make($request->all(), [
+        $validator = $request->validate([
             'nama_instansi' => 'sometimes|required|string|max:255',
             'alamat' => 'sometimes|required|string|max:255',
             'latitude' => 'nullable|numeric',
@@ -154,16 +136,24 @@ class AdminLokasiPrakerinController extends Controller
             'status_aktif' => 'nullable|boolean',
             'deskripsi' => 'nullable|string',
             'jenis_instansi' => 'nullable|string|max:255',
+            'jadwal' => 'required|array|min:1',
+            'jadwal.*.hari' => 'required|string|max:10',
+            'jadwal.*.jam_masuk' => 'required|date_format:H:i',
+            'jadwal.*.jam_pulang' => 'required|date_format:H:i',
+            'jadwal.*.toleransi_masuk' => 'nullable|integer',
+            'jadwal.*.toleransi_pulang' => 'nullable|integer',
+            'jadwal.*.status_aktif' => 'nullable|boolean',
+            'jadwal.*.keterangan' => 'nullable|string',
         ]);
-        if ($validator->fails()) {
-            return response()->json([
-                'message' => 'Validation failed',
-                'status' => 'error',
-                'code' => 422,
-                'errors' => $validator->errors(),
-            ], 422);
+
+        // dd($validator);
+        $lokasi->update($validator);
+
+        // Sinkronisasi jadwal jika ada di request
+        if ($request->has('jadwal')) {
+            $lokasi->syncJadwal($request->jadwal);
         }
-        $lokasi->update($validator->validated());
+
         return response()->json([
             'message' => 'Data lokasi prakerin updated successfully',
             'status' => 'success',

@@ -24,4 +24,23 @@ class LokasiPrakerin extends Model
     {
         return $this->hasMany(JadwalPrakerin::class);
     }
+
+    public function syncJadwal($jadwalBaru)
+    {
+        // Hapus semua jadwal lama
+        $this->jadwalPrakerin()->delete();
+
+        // Tambahkan jadwal baru
+        foreach ($jadwalBaru as $jadwal) {
+            $this->jadwalPrakerin()->create([
+                'hari' => $jadwal['hari'],
+                'jam_masuk' => $jadwal['jam_masuk'],
+                'jam_pulang' => $jadwal['jam_pulang'],
+                'toleransi_masuk' => $jadwal['toleransi_masuk'] ?? 10,
+                'toleransi_pulang' => $jadwal['toleransi_pulang'] ?? 0,
+                'status_aktif' => $jadwal['status_aktif'] ?? true,
+                'keterangan' => $jadwal['keterangan'] ?? 'Jadwal input',
+            ]);
+        }
+    }
 }
