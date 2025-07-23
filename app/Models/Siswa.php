@@ -18,4 +18,19 @@ class Siswa extends Model
     {
         return $this->count();
     }
+
+    public function lokasiPrakerin()
+    {
+        return $this->belongsTo(LokasiPrakerin::class, 'lokasi_prakerin_id');
+    }
+
+    public function guruPembimbingLokasi()
+    {
+        return $this->belongsToMany(Guru::class, 'pembimbing_siswas', 'siswa_id', 'guru_id');
+    }
+
+    public static function countSiswaLokasi()
+    {
+        return self::whereNotNull('lokasi_prakerin_id')->count();
+    }
 }

@@ -14,11 +14,19 @@ use Maatwebsite\Excel\Facades\Excel;
 
 class AdminGuruController extends Controller
 {
-    public function getGuru()
+    public function getGuru(Request $request)
     {
         $guru = Guru::with(['user' => function ($query) {
             $query->select('id', 'name', 'email', 'roles', 'password_changed_at');
-        }])->select('id', 'nama', 'user_id', 'nip', 'no_hp', 'jabatan')->latest()->paginate(10);
+        }])
+            ->select('id', 'nama', 'user_id', 'nip', 'no_hp', 'jabatan')
+            ->when($request->search, function ($query) use ($request) {
+                $query->where('nama', 'like', '%' . $request->search . '%')
+                    ->orWhere('nip', 'like', '%' . $request->search . '%');
+            })
+            ->latest()
+            ->paginate(10);
+
         return response()->json([
             'message' => 'Guru retrieved successfully',
             'status' => 'success',

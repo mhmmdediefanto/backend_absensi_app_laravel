@@ -25,6 +25,24 @@ class AdminLokasiPrakerinController extends Controller
         ]);
     }
 
+    public function getLokasiNotPembimbing(Request $request)
+    {
+        $search = $request->input('search');
+
+        $lokasiPrakerin = LokasiPrakerin::query()
+            ->whereNull('guru_id')
+            ->when($search, function ($query, $search) {
+                $query->where(function ($q) use ($search) {
+                    $q->where('nama_instansi', 'like', "%{$search}%")
+                        ->orWhere('alamat', 'like', "%{$search}%");
+                });
+            })->latest()->paginate(10);
+
+        return response()->json([
+            'data' => $lokasiPrakerin
+        ], 200);
+    }
+
     public function detailLokasiPrakerin($id)
     {
         $lokasi = LokasiPrakerin::with('jadwaPrakerin')->find($id);

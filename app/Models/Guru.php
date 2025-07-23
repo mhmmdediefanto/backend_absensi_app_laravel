@@ -18,4 +18,9 @@ class Guru extends Model
     {
         return $this->count();
     }
+
+    public function siswa()
+    {
+        return $this->belongsToMany(Siswa::class, 'pembimbing_siswas', 'siswa_id', 'guru_id');
+    }
 }
