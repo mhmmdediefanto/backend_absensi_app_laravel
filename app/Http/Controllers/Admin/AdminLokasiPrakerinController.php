@@ -13,9 +13,16 @@ use Maatwebsite\Excel\Facades\Excel;
 
 class AdminLokasiPrakerinController extends Controller
 {
-    public function getAllLokasiPrakerin()
+    public function getAllLokasiPrakerin(Request $request)
     {
-        $lokasiPrakerin = LokasiPrakerin::select('*')->latest()->paginate(10);
+        $search = $request->input('search');
+        $lokasiPrakerin = LokasiPrakerin::select('*')
+            ->when($search, function ($query, $search) {
+                $query->where(function ($q) use ($search) {
+                    $q->where('nama_instansi', 'like', "%{$search}%")
+                        ->orWhere('alamat', 'like', "%{$search}%");
+                });
+            })->latest()->paginate(10);
         return response()->json([
             'message' => 'Data lokasi prakerin retrieved successfully',
             'status' => 'success',

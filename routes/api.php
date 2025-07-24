@@ -4,7 +4,7 @@ use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Admin\AdminGuruController;
 use App\Http\Controllers\Admin\AdminLokasiPrakerinController;
 use App\Http\Controllers\Auth\AuthController;
-use App\Http\Controllers\Admin\KelolaPembimbingController;
+use App\Http\Controllers\Admin\kelolaPembimngLokasiController;
 use App\Http\Controllers\Admin\PenempatanSiswaController;
 use App\Http\Controllers\Siswa\SiswaController;
 use Illuminate\Support\Facades\Route;
@@ -52,15 +52,15 @@ Route::middleware('api-session')->group(function () {
         Route::post("/import-lokasi", [AdminLokasiPrakerinController::class, 'importLokasi']);
         Route::get("/detail-lokasi/{id}", [AdminLokasiPrakerinController::class, 'detailLokasi']);
 
-        // kelola pembimbing
-        Route::get('/get-kelola-pembimbing', [KelolaPembimbingController::class, 'getKelolaPembimbing']);
-        Route::post("/kelola-pembimbing", [KelolaPembimbingController::class, 'addKelola']);
-        Route::put("/kelola-pembimbing/edit/{id}", [KelolaPembimbingController::class, 'updated']);
-        Route::delete("/kelola-pembimbing-delete/{id}", [KelolaPembimbingController::class, 'destroy']);
+        // kelola pembimbing - lokasi prakerin
+        Route::get('/get-kelola-pembimbing', [kelolaPembimngLokasiController::class, 'getKelolaPembimbingLokasi']);
+        Route::post("/kelola-pembimbing-lokasi", [kelolaPembimngLokasiController::class, 'addKelola']);
+        Route::delete("/kelola-pembimbing-lokasi/{id}", [kelolaPembimngLokasiController::class, 'deleteKelola']);
 
         // Penempatan siswa
         Route::get("/penempatan-siswa", [PenempatanSiswaController::class, 'index']);
-        Route::post("/tambah-penempatan-siswa", [PenempatanSiswaController::class, 'update']);
+        Route::post("/tambah-penempatan-siswa", [PenempatanSiswaController::class, 'addPenempatan']);
+        Route::delete("/hapus-penempatan-siswa/{id}", [PenempatanSiswaController::class, 'deletePenempatan']);
     });
 });
 
