@@ -3,9 +3,11 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Guru;
 use App\Models\GuruLokasi as ModelsGuruLokasi;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 
 class kelolaPembimngLokasiController extends Controller
 {
@@ -27,29 +29,25 @@ class kelolaPembimngLokasiController extends Controller
     {
         $request->validate([
             'guru_id' => 'required|exists:gurus,id',
-            'lokasi_prakerin_id' => 'required|exists:lokasi_prakerins,id',
+            'lokasi_prakerin_id' => 'required|array',
+            'lokasi_prakerin_id.*' => 'exists:lokasi_prakerins,id',
         ]);
 
         // Cegah duplikat relasi
         $exists = DB::table('guru_lokasis')
             ->where('guru_id', $request->guru_id)
-            ->where('lokasi_prakerin_id', $request->lokasi_prakerin_id)
+            ->whereIn('lokasi_prakerin_id', $request->lokasi_prakerin_id)
             ->exists();
 
+
         if ($exists) {
-            return response()->json([
-                'message' => 'Guru sudah membimbing di lokasi ini.',
-                'code' => 422
-            ], 422);
+            throw ValidationException::withMessages([
+                'lokasi_prakerin_id' => ['Guru ini sudah terdaftar di lokasi yang dipilih.'],
+            ]);
         }
 
-        // Simpan ke pivot
-        DB::table('guru_lokasis')->insert([
-            'guru_id' => $request->guru_id,
-            'lokasi_prakerin_id' => $request->lokasi_prakerin_id,
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
+        $guru = Guru::find($request->guru_id);
+        $guru->lokasiPrakerins()->syncWithoutDetaching($request->lokasi_prakerin_id);
 
         return response()->json([
             'message' => 'Data kelola pembimbing lokasi created successfully',

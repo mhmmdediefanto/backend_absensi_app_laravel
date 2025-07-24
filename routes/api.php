@@ -46,7 +46,6 @@ Route::middleware('api-session')->group(function () {
         Route::post('/guru-import', [AdminGuruController::class, 'importGuru']);
 
         Route::get('/get-lokasi-prakerin', [AdminLokasiPrakerinController::class, 'getAllLokasiPrakerin']);
-        Route::get('/get-lokasi-not-pembimbing', [AdminLokasiPrakerinController::class, 'getLokasiNotPembimbing']);
         Route::post('/create-lokasi-prakerin', [AdminLokasiPrakerinController::class, 'createLokasiPrakerin']);
         Route::put('/update-lokasi-prakerin/{id}', [AdminLokasiPrakerinController::class, 'updateLokasiPrakerin']);
         Route::delete('/delete-lokasi-prakerin/{id}', [AdminLokasiPrakerinController::class, 'deleteLokasiPrakerin']);
