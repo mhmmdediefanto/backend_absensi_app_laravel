@@ -12,7 +12,7 @@ class PenempatanSiswaController extends Controller
 
     public function index()
     {
-        $siswa = Siswa::with(['lokasiPrakerin', 'guruPembimbingLokasi'])->whereNotNull('lokasi_prakerin_id')->get();
+        $siswa = Siswa::with(['lokasiPrakerin', 'guruPembimbingLokasi'])->whereNotNull('lokasi_prakerin_id')->latest()->paginate(10);
         return response()->json([
             'message' => 'Data siswa berhasil diambil',
             'total_siswa_lokasi' => Siswa::countSiswaLokasi(),

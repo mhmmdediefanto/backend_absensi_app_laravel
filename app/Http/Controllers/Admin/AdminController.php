@@ -14,13 +14,20 @@ use Maatwebsite\Excel\Facades\Excel;
 
 class AdminController extends Controller
 {
-    public function getSiswa()
+    public function getSiswa(Request $request)
     {
+        $search = $request->search;
 
         $siswa = Siswa::select('id', 'user_id', 'nama', 'nis', 'kelas', 'jurusan', 'no_hp', 'alamat')
             ->with(['user' => function ($query) {
                 $query->select('id', 'name', 'email', 'roles', 'password_changed_at');
             }])
+            ->when($search, function ($query) use ($search) {
+                $query->where('nama', 'like', '%' . $search . '%')
+                    ->orWhere('nis', 'like', '%' . $search . '%')
+                    ->orWhere('kelas', 'like', '%' . $search . '%')
+                    ->orWhere('jurusan', 'like', '%' . $search . '%');
+            })
             ->latest()->paginate(10);
         return response()->json([
             'message' => 'Data Siswa',
@@ -207,7 +214,6 @@ class AdminController extends Controller
             return response()->json([
                 'message' => 'Berhasil Import',
             ], 200);
-
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Failed to import siswa',
