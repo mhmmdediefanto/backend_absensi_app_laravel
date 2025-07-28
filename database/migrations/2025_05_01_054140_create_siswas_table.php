@@ -20,6 +20,7 @@ return new class extends Migration
             $table->unsignedBigInteger('lokasi_prakerin_id')->nullable();
             $table->foreign('lokasi_prakerin_id')->references('id')->on('lokasi_prakerins')->onDelete('cascade');
 
+            $table->enum('status_prakerin', ['aktif', 'nonaktif', 'selesai', 'dibatalkan'])->default('nonaktif');
             $table->string('nama', 255);
             $table->string('nis', 100)->unique();
             $table->string('kelas', 100);

@@ -17,12 +17,18 @@ class LokasiPrakerin extends Model
 
     public function siswa()
     {
-        return $this->hasMany(User::class);
+        return $this->hasMany(Siswa::class, 'lokasi_prakerin_id', 'id');
     }
 
     public function jadwalPrakerin()
     {
         return $this->hasMany(JadwalPrakerin::class);
+    }
+
+    // relasi dengan guru
+    public function guruPembimbing()
+    {
+        return $this->belongsToMany(Guru::class, 'guru_lokasis', 'lokasi_prakerin_id', 'guru_id');
     }
 
     public function syncJadwal($jadwalBaru)

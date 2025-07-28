@@ -6,6 +6,9 @@ use App\Http\Controllers\Admin\AdminLokasiPrakerinController;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Admin\kelolaPembimngLokasiController;
 use App\Http\Controllers\Admin\PenempatanSiswaController;
+use App\Http\Controllers\Guru\AnakBimbingController;
+use App\Http\Controllers\Guru\LokasiPembimbingPrakerin;
+use App\Http\Controllers\Siswa\ProfileController;
 use App\Http\Controllers\Siswa\SiswaController;
 use Illuminate\Support\Facades\Route;
 
@@ -22,12 +25,20 @@ Route::middleware('api-session')->group(function () {
 
     // 🧑‍🏫 Guru
     Route::prefix('guru')->middleware(['auth:sanctum', 'is_guru'])->group(function () {
-        // Route::get('/get-guru', [AdminGuruController::class, 'getGuru']);
+        Route::get('/get-lokasi-prakerin', [LokasiPembimbingPrakerin::class, 'getAllLokasiPembimbing']);
+        Route::get('/detail-lokasi-prakerin/{id}', [LokasiPembimbingPrakerin::class, 'getDetailLokasiPembimbing']);
+
+        Route::get('/get-anak-bimbing', [AnakBimbingController::class, 'getAnakBimbing']);
+        Route::get('/detail-anak-bimbing/{id}', [AnakBimbingController::class, 'getDetailAnakBimbing']);
     });
 
     // 👨‍🎓 Siswa
     Route::prefix('siswa')->middleware(['auth:sanctum', 'is_siswa'])->group(function () {
         Route::post('/registered-face', [SiswaController::class, 'registeredFace']);
+        // get_profile
+        Route::get("/get-profile", [ProfileController::class, 'getProfile']);
+        // get_pembimbing_siswa
+        Route::get("/get-pembimbing-siswa", [SiswaController::class, 'getPembimbingSiswa']);
     });
 
     // 🧑‍💼 Admin
@@ -61,6 +72,7 @@ Route::middleware('api-session')->group(function () {
         Route::get("/penempatan-siswa", [PenempatanSiswaController::class, 'index']);
         Route::post("/tambah-penempatan-siswa", [PenempatanSiswaController::class, 'addPenempatan']);
         Route::delete("/hapus-penempatan-siswa/{id}", [PenempatanSiswaController::class, 'deletePenempatan']);
+        Route::put("/batalkan-penempatan-siswa/{id}", [PenempatanSiswaController::class, 'batalkanPenempatan']);
     });
 });
 

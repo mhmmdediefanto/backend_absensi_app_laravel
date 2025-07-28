@@ -21,7 +21,7 @@ class Siswa extends Model
 
     public function lokasiPrakerin()
     {
-        return $this->belongsTo(LokasiPrakerin::class, 'lokasi_prakerin_id');
+        return $this->belongsTo(LokasiPrakerin::class, 'lokasi_prakerin_id', 'id');
     }
 
     public function guruPembimbingLokasi()
