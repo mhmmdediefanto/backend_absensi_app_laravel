@@ -9,6 +9,7 @@ use App\Models\Siswa;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Maatwebsite\Excel\Facades\Excel;
 
@@ -70,14 +71,13 @@ class AdminController extends Controller
                 $validatedData['foto_wajah'] = null;
             }
 
-            $validatedData['password'] = bcrypt($validatedData['nis']);
             $validatedData['roles'] = 'siswa';
 
 
 
             $user = User::create([
                 'email' => $validatedData['email'],
-                'password' => $validatedData['nis'],
+                'password' => Hash::make(($validatedData['nis'])),
                 'name' => $validatedData['nama'],
                 'roles' => $validatedData['roles'],
             ]);

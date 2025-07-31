@@ -13,7 +13,7 @@ class ProfileController extends Controller
 {
     public function getProfile()
     {
-        $siswa = Siswa::where('user_id', Auth::user()->id)->with('lokasiPrakerin', 'guruPembimbingLokasi')->first();
+        $siswa = Siswa::where('user_id', Auth::user()->id)->with('lokasiPrakerin', 'guruPembimbingLokasi','user')->first();
 
         if (!$siswa) {
             return response()->json([

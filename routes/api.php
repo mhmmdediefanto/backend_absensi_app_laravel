@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\AdminLokasiPrakerinController;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Admin\kelolaPembimngLokasiController;
 use App\Http\Controllers\Admin\PenempatanSiswaController;
+use App\Http\Controllers\FaceRecognitionController;
 use App\Http\Controllers\Guru\AnakBimbingController;
 use App\Http\Controllers\Guru\LokasiPembimbingPrakerin;
 use App\Http\Controllers\Siswa\ProfileController;
@@ -76,6 +77,13 @@ Route::middleware('api-session')->group(function () {
     });
 });
 
+// 🤖 Face Recognition Routes (tidak perlu auth untuk testing)
+Route::prefix('face-recognition')->group(function () {
+    Route::post('/recognize-file', [FaceRecognitionController::class, 'recognizeFace']);
+    Route::post('/recognize-base64', [FaceRecognitionController::class, 'recognizeFaceBase64']);
+    Route::get('/available-faces', [FaceRecognitionController::class, 'getAvailableFaces']);
+    Route::get('/test', [FaceRecognitionController::class, 'testRecognition']);
+});
 
 Route::fallback(function () {
     return response()->json([

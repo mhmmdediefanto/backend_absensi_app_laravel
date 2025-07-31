@@ -12,18 +12,28 @@ class SiswaController extends Controller
     public function registeredFace(Request $request)
     {
         $request->validate([
-            'image' => 'mimes:jpg',
+            'image' => 'required|image|mimes:jpg,jpeg,png|max:2048',
             'nis' => 'required'
         ]);
 
         $nisSiswa = $request->input('nis');
 
         if ($request->hasFile('image')) {
-            $path = $request->file('image')->store("dataset/{$nisSiswa}", 'public');
-            return response()->json(['success' => true, 'path' => $path]);
+            // Simpan sementara
+            $path = $request->file('image')->store("temp", 'public');
+            $fullPath = storage_path("app/public/" . $path);
+            // Panggil Python untuk crop & resize + simpan ke dataset
+            $pythonScript = base_path('face_recognition/save_dataset.py');
+            $command = "python \"$pythonScript\" \"$fullPath\" $nisSiswa 2>&1";
+            $output = shell_exec($command);
+
+            $result = json_decode($output, true);
+            return response()->json($result);
         }
+
         return response()->json(['error' => 'Tidak ada file dikirim'], 400);
     }
+
 
 
     public function getPembimbingSiswa()

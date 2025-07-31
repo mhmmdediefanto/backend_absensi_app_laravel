@@ -25,3 +25,39 @@ kelola anak bimbing                 ❌       ✅       ❌
     - edit lokasi prakerin
     - delete lokasi prakerin ✅
 ===== End Admin =====
+
+pip install opencv-contrib-python numpy
+
+Kalau kamu buat virtual environment (venv) di lokal, semua package Python akan tersimpan di folder venv/ di dalam project.
+Ini seperti node_modules di Node.js.
+
+📌 Cara buat venv di lokal:
+bash
+Copy
+Edit
+cd C:\xampp\htdocs\BACKEND_ABSENSI_APP
+python -m venv venv
+Aktifkan venv:
+
+bash
+Copy
+Edit
+venv\Scripts\activate
+Install dependencies:
+
+bash
+Copy
+Edit
+pip install opencv-contrib-python numpy pillow
+✅ Jadi saat nanti pindah ke VPS:
+
+Upload project Laravel + folder face_recognition/
+
+Buat venv di VPS
+
+Jalankan:
+
+bash
+Copy
+Edit
+pip install -r requirements.txt
