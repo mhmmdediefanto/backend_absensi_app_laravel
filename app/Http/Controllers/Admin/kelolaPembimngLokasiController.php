@@ -5,8 +5,10 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Guru;
 use App\Models\GuruLokasi as ModelsGuruLokasi;
+use App\Models\Siswa;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 
 class kelolaPembimngLokasiController extends Controller
@@ -49,6 +51,14 @@ class kelolaPembimngLokasiController extends Controller
         $guru = Guru::find($request->guru_id);
         $guru->lokasiPrakerins()->syncWithoutDetaching($request->lokasi_prakerin_id);
 
+        // tambahkan guru pembimbing ke table pivot pembimbing siswas
+        $siswa = Siswa::whereIn('lokasi_prakerin_id', $request->lokasi_prakerin_id)->get();
+        if ($siswa->count() > 0) {
+            foreach ($siswa as $s) {
+                $s->guruPembimbingLokasi()->syncWithoutDetaching($request->guru_id);
+            }
+        }
+        
         return response()->json([
             'message' => 'Data kelola pembimbing lokasi created successfully',
             'status' => 'success',

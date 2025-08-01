@@ -26,7 +26,16 @@ return new class extends Migration
             $table->enum('status_lokasi', ['valid', 'invalid'])->nullable();
             $table->enum('status_wajah', ['valid', 'invalid'])->nullable();
             $table->text('foto')->nullable();
+            $table->text('keterangan')->nullable();
             $table->timestamps();
+
+            $table->unique(['user_id', 'tanggal', 'tipe_absen']);
+            $table->index('lokasi_prakerin_id');
+            $table->index('status_lokasi');
+            $table->index('status_wajah');
+            $table->index('tanggal');
+            $table->index('time');
+            $table->index('tipe_absen');
         });
     }
 

@@ -86,8 +86,11 @@ class FaceRecognitionController extends Controller
     {
         $pythonScript = base_path('face_recognition/recognize.py');
         
+        // Use Python from virtual environment
+        $venvPython = base_path('venv/Scripts/python.exe');
+        
         // Execute Python script
-        $command = "python \"$pythonScript\" \"$imagePath\" 2>&1";
+        $command = "\"$venvPython\" \"$pythonScript\" \"$imagePath\" 2>&1";
         $output = shell_exec($command);
         
         // Parse JSON output
@@ -107,11 +110,14 @@ class FaceRecognitionController extends Controller
     {
         $pythonScript = base_path('face_recognition/recognize.py');
         
+        // Use Python from virtual environment
+        $venvPython = base_path('venv/Scripts/python.exe');
+        
         // Escape base64 string for command line
         $escapedBase64 = escapeshellarg($base64String);
         
         // Execute Python script with base64
-        $command = "python \"$pythonScript\" --base64 $escapedBase64 2>&1";
+        $command = "\"$venvPython\" \"$pythonScript\" --base64 $escapedBase64 2>&1";
         $output = shell_exec($command);
         
         // Parse JSON output

@@ -58,13 +58,29 @@ class FaceRecognizer:
     
     def determine_status(self, confidence, folder_name):
         """Tentukan status berdasarkan confidence dan folder name"""
-        # Threshold yang lebih realistis untuk LBPH
-        if confidence < 80:  # LBPH biasanya < 80 untuk recognition yang baik
+        # Threshold yang lebih ketat untuk LBPH
+        if confidence < 80:  # Threshold lebih ketat untuk recognition yang baik
             return "recognized"
-        elif confidence < 120:  # Range yang lebih luas untuk "maybe"
+        elif confidence < 120:  # Range yang lebih sempit untuk "maybe"
             return "maybe"
         else:
             return "unknown"
+    
+    def process_recognition_result(self, label, confidence):
+        """Proses hasil recognition dengan validasi tambahan"""
+        # Dapatkan informasi folder
+        folder_name = self.get_folder_name(label)
+        folder_id = self.get_folder_id(label)
+        
+        # Tentukan status dengan threshold yang lebih ketat
+        status = self.determine_status(confidence, folder_name)
+        
+        # Jika status unknown, kosongkan folder info
+        if status == "unknown":
+            folder_name = None
+            folder_id = None
+        
+        return folder_name, folder_id, status
     
     def recognize_face_from_path(self, image_path):
         """Recognize wajah dari path file gambar"""
@@ -107,12 +123,8 @@ class FaceRecognizer:
                 # Predict
                 label, confidence = self.recognizer.predict(face_roi)
                 
-                # Dapatkan informasi folder
-                folder_name = self.get_folder_name(label)
-                folder_id = self.get_folder_id(label)
-                
-                # Tentukan status dengan threshold yang lebih realistis
-                status = self.determine_status(confidence, folder_name)
+                # Proses hasil recognition dengan validasi
+                folder_name, folder_id, status = self.process_recognition_result(label, confidence)
                 
                 result = {
                     'internal_label': int(label),
@@ -188,12 +200,8 @@ class FaceRecognizer:
                 # Predict
                 label, confidence = self.recognizer.predict(face_roi)
                 
-                # Dapatkan informasi folder
-                folder_name = self.get_folder_name(label)
-                folder_id = self.get_folder_id(label)
-                
-                # Tentukan status dengan threshold yang lebih realistis
-                status = self.determine_status(confidence, folder_name)
+                # Proses hasil recognition dengan validasi
+                folder_name, folder_id, status = self.process_recognition_result(label, confidence)
                 
                 result = {
                     'internal_label': int(label),

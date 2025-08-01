@@ -9,6 +9,7 @@ use App\Http\Controllers\Admin\PenempatanSiswaController;
 use App\Http\Controllers\FaceRecognitionController;
 use App\Http\Controllers\Guru\AnakBimbingController;
 use App\Http\Controllers\Guru\LokasiPembimbingPrakerin;
+use App\Http\Controllers\Siswa\AbsensiController;
 use App\Http\Controllers\Siswa\ProfileController;
 use App\Http\Controllers\Siswa\SiswaController;
 use Illuminate\Support\Facades\Route;
@@ -40,6 +41,9 @@ Route::middleware('api-session')->group(function () {
         Route::get("/get-profile", [ProfileController::class, 'getProfile']);
         // get_pembimbing_siswa
         Route::get("/get-pembimbing-siswa", [SiswaController::class, 'getPembimbingSiswa']);
+
+        // absensi 
+        Route::post('/absensi', [AbsensiController::class, 'absensi']);
     });
 
     // 🧑‍💼 Admin
