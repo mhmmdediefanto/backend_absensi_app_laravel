@@ -5,11 +5,10 @@ namespace App\Http\Controllers\Siswa;
 use App\Helpers\HaversineFormula;
 use App\Http\Controllers\Controller;
 use App\Models\LokasiPrakerin;
+use App\Models\Siswa;
 use App\Services\AbsensiService;
 use App\Services\FaceRecognizeService;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 
 class AbsensiController extends Controller
 {
@@ -24,27 +23,37 @@ class AbsensiController extends Controller
 
     public function absensi(Request $request)
     {
-
         $request->validate([
             'lokasi_prakerin_id' => 'required|exists:lokasi_prakerins,id',
             'lat' => 'required|numeric',
             'lon' => 'required|numeric',
             'foto' => 'required|image|mimes:jpeg,jpg|max:4096',
             'tipe_absen' => 'required|in:masuk,pulang',
+            'bypass_time' => 'boolean', // Optional parameter untuk testing
         ]);
 
+        // Validasi jadwal dan waktu absensi
+        $bypassTime = $request->boolean('bypass_time', false);
+        $checkAbsensi = $this->absensiService->checkAbsensi($request->tipe_absen, $request->lokasi_prakerin_id, $bypassTime);
 
-        // recognisasi wajah
-        $result = $this->faceRecognizeService->recognize($request->file('foto'));
-        // dd($result);
-        if (!$result['success'] || $result['data'][0]['confidence'] > 80) {
+        if (!$checkAbsensi['status']) {
             return response()->json([
-                'message' => 'Wajah tidak terdeteksi atau tidak cocok',
+                'message' => $checkAbsensi['message'],
                 'code' => 400
             ], 400);
         }
 
-        // ambil lokasi praktek
+        // Validasi face recognition
+        $result = $this->faceRecognizeService->recognize($request->file('foto'));
+        
+        if (!$result['success'] || $result['data'][0]['confidence'] < 80) {
+            return response()->json([
+                'message' => 'Wajah tidak terdeteksi atau tidak cocok dengan data yang tersimpan',
+                'code' => 400
+            ], 400);
+        }
+
+        // Validasi lokasi prakerin
         $lokasi = LokasiPrakerin::where('id', $request->lokasi_prakerin_id)->first();
 
         if (!$lokasi) {
@@ -54,6 +63,7 @@ class AbsensiController extends Controller
             ], 400);
         }
 
+        // Validasi jarak lokasi
         $distance = HaversineFormula::distance(
             $request->lat,
             $request->lon,
@@ -61,19 +71,20 @@ class AbsensiController extends Controller
             $lokasi->longitude
         );
 
-
         if ($distance > $lokasi->radius) {
             return response()->json([
-                'message' => 'Anda tidak berada di lokasi prakerin',
+                'message' => 'Anda tidak berada di lokasi prakerin. Jarak: ' . round($distance, 2) . ' meter',
                 'code' => 400
             ], 400);
         }
 
-        // ambil nis siswa
+        // Ambil NIS siswa dari hasil face recognition
         $nisSiswa = $result['data'][0]['folder_id'];
+        $userId = Siswa::where('nis', $nisSiswa)->first()->user_id;
 
-        $absensi = $this->absensiService->absensi([
-            'user_id' => Auth::user()->id,
+        // Simpan data absensi
+        $absensiData = [
+            'user_id' => $userId,
             'lokasi_prakerin_id' => $request->lokasi_prakerin_id,
             'tanggal' => now()->toDateString(),
             'time' => now()->toTimeString(),
@@ -82,22 +93,32 @@ class AbsensiController extends Controller
             'status_lokasi' => 'valid',
             'status_wajah' => 'valid',
             'tipe_absen' => $request->tipe_absen,
-        ]);
+        ];
 
-        if (isset($absensi['error'])) {
-            return response()->json([
-                'message' => $absensi['error'],
-                'code' => 400
-            ], 400);
+        // Tambahkan status keterlambatan jika ada
+        if (isset($checkAbsensi['terlambat']) && $checkAbsensi['terlambat']) {
+            $absensiData['status_keterlambatan'] = 'terlambat';
+            $absensiData['keterangan'] = "Hadir";
+        } else {
+            $absensiData['keterangan'] = "Hadir";
+            $absensiData['status_keterlambatan'] = 'tepat_waktu';
+        }
+
+        $this->absensiService->absensi($absensiData);
+
+        $responseMessage = 'Absensi ' . $request->tipe_absen . ' berhasil';
+        if (isset($checkAbsensi['terlambat']) && $checkAbsensi['terlambat']) {
+            $responseMessage .= ' (Terlambat)';
         }
 
         return response()->json([
-            'message' => 'Absensi berhasil',
+            'message' => $responseMessage,
             'code' => 200,
             'data' => [
                 'nis' => $nisSiswa,
-                'distance' => $distance,
-                'result' => $result
+                'distance' => round($distance, 2),
+                'confidence' => $result['data'][0]['confidence'],
+                'terlambat' => $checkAbsensi['terlambat'] ?? false
             ]
         ], 200);
     }
