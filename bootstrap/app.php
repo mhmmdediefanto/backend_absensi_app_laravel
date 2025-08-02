@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Middleware\PreventSessionRegeneration;
+use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Application;
@@ -33,6 +34,9 @@ return Application::configure(basePath: dirname(__DIR__))
             'is_siswa' => \App\Http\Middleware\is_siswa::class,
             'is_guru' => \App\Http\Middleware\is_guru::class,
         ]);
+    })
+    ->withSchedule(function (Schedule $schedule) {
+        $schedule->command('temp:clean')->dailyAt('00:00');
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //

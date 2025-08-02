@@ -12,7 +12,7 @@ class PenempatanSiswaController extends Controller
 
     public function index()
     {
-        $siswa = Siswa::with(['lokasiPrakerin', 'guruPembimbingLokasi'])->whereNotNull('lokasi_prakerin_id')->get();
+        $siswa = Siswa::with(['lokasiPrakerin', 'guruPembimbingLokasi'])->whereNotNull('lokasi_prakerin_id')->latest()->paginate(10);
         return response()->json([
             'message' => 'Data siswa berhasil diambil',
             'total_siswa_lokasi' => Siswa::countSiswaLokasi(),
@@ -47,6 +47,7 @@ class PenempatanSiswaController extends Controller
 
         // Update lokasi prakerin siswa
         $cekSiswa->lokasi_prakerin_id = $validatedData['lokasi_prakerin_id'];
+        $cekSiswa->status_prakerin = 'aktif';
         $cekSiswa->save();
 
         // cek apakah lokasi tersebut sudah memiliki guru pembimbing
@@ -74,6 +75,7 @@ class PenempatanSiswaController extends Controller
 
         // hapus penempatan siswa
         $siswa->lokasi_prakerin_id = null;
+        $siswa->status_prakerin = 'nonaktif';
         $siswa->save();
 
         // hapus guru pembimbing dari table pivot pembimbing siswas
@@ -81,6 +83,26 @@ class PenempatanSiswaController extends Controller
 
         return response()->json([
             'message' => 'Penempatan siswa berhasil dihapus',
+            'code' => 200
+        ], 200);
+    }
+
+    public function batalkanPenempatan($id)
+    {
+        $siswa = Siswa::where('id', $id)->whereNotNull('lokasi_prakerin_id')->first();
+        if (!$siswa) {
+            return response()->json([
+                'message' => 'Siswa tidak ditemukan',
+                'code' => 404
+            ], 404);
+        }
+
+        $siswa->status_prakerin = 'dibatalkan';
+        $siswa->lokasi_prakerin_id = null;
+        $siswa->save();
+
+        return response()->json([
+            'message' => 'Penempatan siswa berhasil dibatalkan',
             'code' => 200
         ], 200);
     }

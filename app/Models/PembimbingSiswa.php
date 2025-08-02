@@ -11,7 +11,11 @@ class PembimbingSiswa extends Model
 
     public function siswa()
     {
-        return $this->belongsTo(Siswa::class, 'siswa_id');
+        return $this->belongsTo(Siswa::class, 'siswa_id', 'id');
     }
-    
+
+    public function guru()
+    {
+        return $this->belongsTo(Guru::class, 'guru_id', 'id');
+    }
 }
