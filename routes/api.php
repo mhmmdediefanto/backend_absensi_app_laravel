@@ -44,6 +44,8 @@ Route::middleware('api-session')->group(function () {
 
         // absensi 
         Route::post('/absensi', [AbsensiController::class, 'absensi']);
+        Route::get('/get-absensi-today', [AbsensiController::class, 'getAbsensiToday']);
+        Route::get('/get-riwayat-absensi', [AbsensiController::class, 'getRiwayatAbsensi']);
     });
 
     // 🧑‍💼 Admin

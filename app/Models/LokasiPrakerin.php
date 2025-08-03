@@ -22,7 +22,7 @@ class LokasiPrakerin extends Model
 
     public function jadwalPrakerin()
     {
-        return $this->hasMany(JadwalPrakerin::class);
+        return $this->hasMany(JadwalPrakerin::class, 'lokasi_prakerin_id', 'id');
     }
 
     // relasi dengan guru
