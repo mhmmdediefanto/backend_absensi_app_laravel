@@ -33,4 +33,9 @@ class Siswa extends Model
     {
         return self::whereNotNull('lokasi_prakerin_id')->count();
     }
+
+    public function absensi()
+    {
+        return $this->hasMany(Absensis::class, 'user_id', 'user_id');
+    }
 }

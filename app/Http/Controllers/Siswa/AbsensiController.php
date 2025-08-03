@@ -11,7 +11,7 @@ use App\Services\AbsensiService;
 use App\Services\FaceRecognizeService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Cache;
 
 class AbsensiController extends Controller
 {
@@ -29,7 +29,11 @@ class AbsensiController extends Controller
     public function getRiwayatAbsensi()
     {
 
-        $absensi = Absensis::where('user_id', Auth::id())->where('tanggal', '!=', now()->toDateString())->get();
+        $useId = Auth::id();
+        $cacheKey = 'riwayat_absensi_user_' . $useId;
+        $absensi = Cache::remember($cacheKey, 60 * 6, function () use ($useId) {
+            return Absensis::where('user_id', $useId)->where('tanggal', '!=', now()->toDateString())->get();
+        });
 
         if ($absensi->isEmpty()) {
             return response()->json([
@@ -117,6 +121,8 @@ class AbsensiController extends Controller
 
         // Validasi face recognition
         $result = $this->faceRecognizeService->recognize($request->file('foto'));
+
+        // return $result;
 
         if (!$result['success'] || $result['data'][0]['confidence'] >= 90) {
             return response()->json([

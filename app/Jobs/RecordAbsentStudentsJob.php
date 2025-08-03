@@ -95,14 +95,14 @@ class RecordAbsentStudentsJob implements ShouldQueue
                         'lokasi_prakerin_id' => $jadwal->lokasi_prakerin_id,
                         'tanggal' => $tanggalHariIni,
                         'time' => '00:00:00',
-                        'tipe_absen' => 'masuk',
+                        'tipe_absen' => null,
                         'latitude' => 0,
                         'longitude' => 0,
-                        'status_lokasi' => 'invalid',
-                        'status_wajah' => 'invalid',
-                        'status_keterlambatan' => 'terlambat',
+                        'status_lokasi' => null,
+                        'status_wajah' => null,
                         'keterangan' => 'Alpa',
-                        'foto' => null
+                        'foto' => null,
+                        'status_keterlambatan' => null,
                     ]);
 
                     $alpaLokasi++;
