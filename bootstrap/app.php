@@ -37,6 +37,20 @@ return Application::configure(basePath: dirname(__DIR__))
     })
     ->withSchedule(function (Schedule $schedule) {
         $schedule->command('temp:clean')->dailyAt('00:00');
+        
+        // Schedule untuk mencatat siswa yang alpa menggunakan Queue
+        // Jalankan setiap hari jam 13:00 (setelah jam pulang)
+        $schedule->job(new \App\Jobs\RecordAbsentStudentsJob())
+            ->dailyAt('13:00')
+            ->name('record-absent-students')
+            ->withoutOverlapping();
+
+        // Schedule untuk mencatat alpa di hari Sabtu (jam 12:30)
+        $schedule->job(new \App\Jobs\RecordAbsentStudentsJob())
+            ->saturdays()
+            ->at('12:30')
+            ->name('record-absent-students-saturday')
+            ->withoutOverlapping();
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //

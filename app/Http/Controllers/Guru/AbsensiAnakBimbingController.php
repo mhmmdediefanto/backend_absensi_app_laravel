@@ -19,7 +19,7 @@ class AbsensiAnakBimbingController extends Controller
                 $query->select('id', 'nama_instansi', 'alamat');
             }, 'siswa.absensi' => function ($query) {
                 $query->where('tanggal', now()->toDateString());
-                $query->select('id', 'user_id', 'tanggal', 'status_keterlambatan', 'tipe_absen');
+                $query->select('id', 'user_id', 'tanggal', 'status_keterlambatan', 'tipe_absen', 'keterangan');
             }])->get();
 
 
@@ -43,7 +43,7 @@ class AbsensiAnakBimbingController extends Controller
                 $query->select('id', 'nama_instansi', 'alamat');
             }, 'siswa.absensi' => function ($query) {
                 $query->where('tanggal', '!=', now()->toDateString());
-                $query->select('id', 'user_id', 'tanggal', 'status_keterlambatan', 'tipe_absen');
+                $query->select('id', 'user_id', 'tanggal', 'status_keterlambatan', 'tipe_absen', 'keterangan');
             }])->get();
         });
 
