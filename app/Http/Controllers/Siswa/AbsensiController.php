@@ -29,29 +29,56 @@ class AbsensiController extends Controller
 
     public function getRiwayatAbsensi(Request $request)
     {
-        $useId = Auth::id();
+        $userId = Auth::id();
+
+        $request->validate([
+            'page' => 'integer|min:1',
+            'per_page' => 'integer|min:1',
+            'keterangan' => 'string|nullable',
+            'start_date' => 'date|nullable',
+            'end_date' => 'date|nullable',
+        ]);
+
         $page = $request->get('page', 1);
         $perPage = $request->get('per_page', 10);
 
-        // Ambil semua tanggal unik dulu
-        $allDates = Absensis::where('user_id', $useId)
-            ->where('tanggal', '!=', now()->toDateString())
-            ->select('tanggal')
+        // Query dasar
+        $query = Absensis::where('user_id', $userId)
+            ->whereDate('tanggal', '!=', now()->toDateString());
+
+        // ✅ Filter keterangan kalau ada
+        if ($request->filled('keterangan')) {
+            $query->where('tipe_absen', 'masuk')
+                ->where('keterangan', $request->keterangan);
+        }
+
+        // ✅ Filter tanggal range kalau ada
+        if ($request->filled('start_date')) {
+            $query->whereDate('tanggal', '>=', $request->start_date);
+        }
+        if ($request->filled('end_date')) {
+            $query->whereDate('tanggal', '<=', $request->end_date);
+        }
+
+        // Ambil semua tanggal unik
+        $allDates = $query->select('tanggal')
             ->distinct()
             ->orderBy('tanggal', 'desc')
             ->pluck('tanggal');
 
-        // Hitung total dan pagination manual
+        // Pagination manual
         $total = $allDates->count();
         $lastPage = ceil($total / $perPage);
         $offset = ($page - 1) * $perPage;
 
-        // Ambil tanggal untuk halaman yang diminta
         $pageDates = $allDates->slice($offset, $perPage);
 
-        // 🚀 Ambil semua absensi hanya sekali, lalu groupBy tanggal
-        $records = Absensis::where('user_id', $useId)
+        // 🚀 Ambil semua absensi sesuai tanggal hasil filter
+        $records = Absensis::where('user_id', $userId)
             ->whereIn('tanggal', $pageDates)
+            ->when($request->filled('status'), function ($q) use ($request) {
+                $q->where('status', $request->status);
+            })
             ->get()
             ->groupBy('tanggal');
 
