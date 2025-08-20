@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             // relasi ke siswa
             $table->foreignId('siswa_id')->constrained('siswas')->onDelete('cascade');
+            $table->string('judul');
             $table->longText('deskripsi')->nullable();
             $table->date('tanggal')->nullable();
             $table->text('catatan_guru')->nullable();

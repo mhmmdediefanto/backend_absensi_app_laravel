@@ -10,6 +10,7 @@ use App\Http\Controllers\FaceRecognitionController;
 use App\Http\Controllers\Guru\AbsensiAnakBimbingController;
 use App\Http\Controllers\Guru\AnakBimbingController;
 use App\Http\Controllers\Guru\LokasiPembimbingPrakerin;
+use App\Http\Controllers\ImageUploaderController;
 use App\Http\Controllers\Siswa\AbsensiController;
 use App\Http\Controllers\Siswa\KegiatanPrakerinController;
 use App\Http\Controllers\Siswa\ProfileController;
@@ -95,6 +96,9 @@ Route::middleware('api-session')->group(function () {
         Route::delete("/hapus-penempatan-siswa/{id}", [PenempatanSiswaController::class, 'deletePenempatan']);
         Route::put("/batalkan-penempatan-siswa/{id}", [PenempatanSiswaController::class, 'batalkanPenempatan']);
     });
+
+    Route::post('/image-uploader', [ImageUploaderController::class, 'uploadImage']);
+    Route::delete('/delete-image', [ImageUploaderController::class, 'destroy']);
 });
 
 // 🤖 Face Recognition Routes (tidak perlu auth untuk testing)

@@ -49,11 +49,13 @@ class KegiatanPrakerinController extends Controller
         try {
             $validatedData = $request->validate([
                 'deskripsi' => 'required',
+                'judul' => 'required',
             ]);
 
             $kegiatanPrakerin = KegiatanPrakerin::create([
                 'siswa_id' => $this->userId,
                 'deskripsi' => $validatedData['deskripsi'],
+                'judul' => $validatedData['judul'],
                 'tanggal' => now()->format('Y-m-d'),
             ]);
 
