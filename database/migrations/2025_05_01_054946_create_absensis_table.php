@@ -27,7 +27,7 @@ return new class extends Migration
             $table->enum('status_wajah', ['valid', 'invalid'])->nullable();
             $table->enum('status_keterlambatan', ['tepat_waktu', 'terlambat'])->nullable();
             $table->text('foto')->nullable();
-            $table->enum('keterangan', ['Hadir', 'Hadir Terlambat', 'Alpa', 'Sakit', 'Izin'])->nullable();
+            $table->enum('keterangan', ['Hadir', 'Alpa', 'Sakit', 'Izin'])->nullable();
             $table->timestamps();
 
             $table->unique(['user_id', 'tanggal', 'tipe_absen']);

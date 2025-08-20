@@ -22,8 +22,6 @@ class AbsensiAnakBimbingController extends Controller
                 $query->select('id', 'user_id', 'tanggal', 'status_keterlambatan', 'tipe_absen', 'keterangan');
             }])->get();
 
-
-
         return response()->json([
             'data' => $absensiSiswa,
             'status' => 'success',

@@ -12,6 +12,7 @@ use App\Services\FaceRecognizeService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
 
 class AbsensiController extends Controller
 {
@@ -26,29 +27,56 @@ class AbsensiController extends Controller
         $this->hariIni = now()->locale('id')->isoFormat('dddd');
     }
 
-    public function getRiwayatAbsensi()
+    public function getRiwayatAbsensi(Request $request)
     {
-
         $useId = Auth::id();
-        $cacheKey = 'riwayat_absensi_user_' . $useId;
-        $absensi = Cache::remember($cacheKey, 60 * 6, function () use ($useId) {
-            return Absensis::where('user_id', $useId)->where('tanggal', '!=', now()->toDateString())->get();
+        $page = $request->get('page', 1);
+        $perPage = $request->get('per_page', 10);
+
+        // Ambil semua tanggal unik dulu
+        $allDates = Absensis::where('user_id', $useId)
+            ->where('tanggal', '!=', now()->toDateString())
+            ->select('tanggal')
+            ->distinct()
+            ->orderBy('tanggal', 'desc')
+            ->pluck('tanggal');
+
+        // Hitung total dan pagination manual
+        $total = $allDates->count();
+        $lastPage = ceil($total / $perPage);
+        $offset = ($page - 1) * $perPage;
+
+        // Ambil tanggal untuk halaman yang diminta
+        $pageDates = $allDates->slice($offset, $perPage);
+
+        // 🚀 Ambil semua absensi hanya sekali, lalu groupBy tanggal
+        $records = Absensis::where('user_id', $useId)
+            ->whereIn('tanggal', $pageDates)
+            ->get()
+            ->groupBy('tanggal');
+
+        // Gabungkan masuk & pulang per tanggal
+        $data = $pageDates->map(function ($tanggal) use ($records) {
+            $absens = $records[$tanggal] ?? collect();
+
+            return [
+                'tanggal' => $tanggal,
+                'masuk'   => $absens->firstWhere('tipe_absen', 'masuk'),
+                'pulang'  => $absens->firstWhere('tipe_absen', 'pulang'),
+            ];
         });
 
-        if ($absensi->isEmpty()) {
-            return response()->json([
-                'message' => 'Riwayat absensi belum ada',
-                'code' => 201
-            ], 201);
-        }
-
-        return response()->json([
-            'message' => 'Riwayat absensi',
-            'code' => 200,
-            'data' => $absensi
-        ], 200);
-
+        return [
+            'data' => $data,
+            'pagination' => [
+                'current_page' => $page,
+                'per_page'     => $perPage,
+                'total'        => $total,
+                'last_page'    => $lastPage,
+            ]
+        ];
     }
+
 
     public function getAbsensiToday()
     {
@@ -122,7 +150,6 @@ class AbsensiController extends Controller
         // Validasi face recognition
         $result = $this->faceRecognizeService->recognize($request->file('foto'));
 
-        // return $result;
 
         if (!$result['success'] || $result['data'][0]['confidence'] >= 90) {
             return response()->json([
@@ -158,6 +185,14 @@ class AbsensiController extends Controller
 
         // Ambil NIS siswa dari hasil face recognition
         $nisSiswa = $result['data'][0]['folder_id'];
+        // cek apakah nis siswa sama yang login
+        if ($nisSiswa != Auth::user()->siswa->nis) {
+            return response()->json([
+                'message' => 'Maaf wajah yang terdeteksi bukan wajah anda',
+                'code' => 400
+            ], 400);
+        };
+
         $userId = Siswa::where('nis', $nisSiswa)->first()->user_id;
 
         // Simpan data absensi

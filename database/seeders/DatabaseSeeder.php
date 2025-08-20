@@ -18,6 +18,8 @@ class DatabaseSeeder extends Seeder
             SiswaSeeder::class,
             AdminSeeder::class,
             PembimbingLokasiSeeder::class,
+            AbsensiSeeder::class,
+            LokasiPrakerinSiswaSeeder::class
         ]);
     }
 }
