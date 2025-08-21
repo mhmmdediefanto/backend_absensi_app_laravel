@@ -10,7 +10,9 @@ use App\Http\Controllers\FaceRecognitionController;
 use App\Http\Controllers\Guru\AbsensiAnakBimbingController;
 use App\Http\Controllers\Guru\AnakBimbingController;
 use App\Http\Controllers\Guru\LokasiPembimbingPrakerin;
+use App\Http\Controllers\ImageUploaderController;
 use App\Http\Controllers\Siswa\AbsensiController;
+use App\Http\Controllers\Siswa\KegiatanPrakerinController;
 use App\Http\Controllers\Siswa\ProfileController;
 use App\Http\Controllers\Siswa\SiswaController;
 use Illuminate\Support\Facades\Route;
@@ -54,6 +56,11 @@ Route::middleware('api-session')->group(function () {
         Route::post('/absensi', [AbsensiController::class, 'absensi']);
         Route::get('/get-absensi-today', [AbsensiController::class, 'getAbsensiToday']);
         Route::get('/get-riwayat-absensi', [AbsensiController::class, 'getRiwayatAbsensi']);
+
+        // kegiatan prakerin siswa
+        Route::get('/get-kegiatan-prakerin', [KegiatanPrakerinController::class, 'getKegiatanPrakerin']);
+        Route::post('/create-kegiatan-prakerin', [KegiatanPrakerinController::class, 'createKegiatanPrakerin']);
+        Route::delete('/delete-kegiatan-prakerin/{id}', [KegiatanPrakerinController::class, 'destroyKegiatanPrakerin']);
     });
 
     // 🧑‍💼 Admin
@@ -89,6 +96,9 @@ Route::middleware('api-session')->group(function () {
         Route::delete("/hapus-penempatan-siswa/{id}", [PenempatanSiswaController::class, 'deletePenempatan']);
         Route::put("/batalkan-penempatan-siswa/{id}", [PenempatanSiswaController::class, 'batalkanPenempatan']);
     });
+
+    Route::post('/image-uploader', [ImageUploaderController::class, 'uploadImage']);
+    Route::delete('/delete-image', [ImageUploaderController::class, 'destroy']);
 });
 
 // 🤖 Face Recognition Routes (tidak perlu auth untuk testing)

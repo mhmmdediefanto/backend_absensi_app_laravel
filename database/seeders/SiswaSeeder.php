@@ -17,6 +17,18 @@ class SiswaSeeder extends Seeder
     {
         $dataSiswa = [
             [
+                'nama' => "Muhammad Ediefanto",
+                'email' => 'ediefanto778@gmail.com',
+                'password' => 211240001155,
+                'nis' => '211240001155',
+                'kelas' => 'XII RPL 1',
+                'jurusan' => 'Rekayasa Perangkat Lunak',
+                'no_hp' => '08123456789',
+                'alamat' => 'Jl. Raya No. 1',
+                'foto_wajah' => null,
+                'lokasi_prakerin_id' => null
+            ],
+            [
                 'nama' => 'Muhammad Rizky',
                 'email' => 'rizky@gmail.com',
                 'password' => 'rizky123',

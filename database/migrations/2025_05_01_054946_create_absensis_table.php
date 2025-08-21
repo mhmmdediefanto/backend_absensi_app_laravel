@@ -25,8 +25,9 @@ return new class extends Migration
             $table->decimal('longitude', 10, 6)->nullable();
             $table->enum('status_lokasi', ['valid', 'invalid'])->nullable();
             $table->enum('status_wajah', ['valid', 'invalid'])->nullable();
+            $table->enum('status_keterlambatan', ['tepat_waktu', 'terlambat'])->nullable();
             $table->text('foto')->nullable();
-            $table->text('keterangan')->nullable();
+            $table->enum('keterangan', ['Hadir', 'Alpa', 'Sakit', 'Izin'])->nullable();
             $table->timestamps();
 
             $table->unique(['user_id', 'tanggal', 'tipe_absen']);
