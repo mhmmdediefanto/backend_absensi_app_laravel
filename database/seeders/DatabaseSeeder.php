@@ -19,7 +19,8 @@ class DatabaseSeeder extends Seeder
             AdminSeeder::class,
             PembimbingLokasiSeeder::class,
             AbsensiSeeder::class,
-            LokasiPrakerinSiswaSeeder::class
+            LokasiPrakerinSiswaSeeder::class,
+            KegiatanSeeder::class
         ]);
     }
 }
