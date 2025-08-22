@@ -9,6 +9,7 @@ use App\Models\LokasiPrakerin;
 use App\Models\Siswa;
 use App\Services\AbsensiService;
 use App\Services\FaceRecognizeService;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
@@ -19,12 +20,14 @@ class AbsensiController extends Controller
     protected $faceRecognizeService;
     protected $absensiService;
     public $hariIni;
+    public $tanggalSekarang;
 
     public function __construct(FaceRecognizeService $faceRecognizeService, AbsensiService $absensiService)
     {
         $this->faceRecognizeService = $faceRecognizeService;
         $this->absensiService = $absensiService;
         $this->hariIni = now()->locale('id')->isoFormat('dddd');
+        $this->tanggalSekarang = now()->format('Y-m-d');
     }
 
     public function getRiwayatAbsensi(Request $request)
@@ -114,11 +117,32 @@ class AbsensiController extends Controller
         // cek apakah ada jadwal prakerin hari ini
         $siswa = Siswa::where('user_id', Auth::id())->first();
 
+        // cek siswa ada atau tidak
         if (!$siswa) {
             return response()->json([
                 'message' => 'Data siswa tidak ditemukan',
                 'code' => 404
             ], 404);
+        }
+
+        // cek apakah siswa sudah punya lokasi
+        if (!$siswa->lokasiPrakerin) {
+            return response()->json([
+                'message' => 'Anda belum memiliki lokasi prakerin, Silahkan Hubungi admin',
+                'code' => 404
+            ], 404);
+        }
+
+        // cek apakah jadwal prakerin tanggal mulai sudah sama dengan hari ini
+        $cekJadwalMulaiPrakerin = $siswa->lokasiPrakerin->pluck('mulai_kerjasama')->first();
+        $waktuMulaiPrakerin = Carbon::parse($cekJadwalMulaiPrakerin)
+            ->locale('id') // set locale Indonesia
+            ->translatedFormat('l, d F Y');
+        if ($cekJadwalMulaiPrakerin != $this->tanggalSekarang) {
+            return response()->json([
+                'message' => "Jadwal prakerin belum dimulai, Mulai pada hari $waktuMulaiPrakerin",
+                'code' => 422,
+            ], 422);
         }
 
         $lokasiPrakerins = $siswa->load(['lokasiPrakerin.jadwalPrakerin' => function ($query) use ($hariIni) {
