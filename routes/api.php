@@ -37,7 +37,7 @@ Route::middleware('api-session')->group(function () {
         // get_anak_bimbing
         Route::get('/get-anak-bimbing', [AnakBimbingController::class, 'getAnakBimbing']);
         Route::get('/detail-anak-bimbing/{id}', [AnakBimbingController::class, 'getDetailAnakBimbing']);
-        
+
 
         // absensi anak bimbing
         Route::get('/get-absensi-anak-bimbing-today', [AbsensiAnakBimbingController::class, 'getAbsensiAnakBimbingToday']);
@@ -61,6 +61,11 @@ Route::middleware('api-session')->group(function () {
         Route::get('/get-kegiatan-prakerin', [KegiatanPrakerinController::class, 'getKegiatanPrakerin']);
         Route::post('/create-kegiatan-prakerin', [KegiatanPrakerinController::class, 'createKegiatanPrakerin']);
         Route::delete('/delete-kegiatan-prakerin/{id}', [KegiatanPrakerinController::class, 'destroyKegiatanPrakerin']);
+    });
+
+    // route siswa dan guru 
+    Route::middleware(['auth:sanctum', 'roles:siswa, guru'])->group(function () {
+        Route::put('/siswa/update-kegiatan-prakerin/{id}', [KegiatanPrakerinController::class, 'updateKegiatanPrakerin']);
     });
 
     // 🧑‍💼 Admin

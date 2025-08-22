@@ -33,6 +33,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'is_admin' => \App\Http\Middleware\is_admin::class,
             'is_siswa' => \App\Http\Middleware\is_siswa::class,
             'is_guru' => \App\Http\Middleware\is_guru::class,
+            'roles' => \App\Http\Middleware\roles::class
         ]);
     })
     ->withSchedule(function (Schedule $schedule) {
