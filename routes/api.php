@@ -12,6 +12,7 @@ use App\Http\Controllers\Guru\AnakBimbingController;
 use App\Http\Controllers\Guru\LokasiPembimbingPrakerin;
 use App\Http\Controllers\ImageUploaderController;
 use App\Http\Controllers\Siswa\AbsensiController;
+use App\Http\Controllers\Siswa\DashboardSiswaController;
 use App\Http\Controllers\Siswa\KegiatanPrakerinController;
 use App\Http\Controllers\Siswa\ProfileController;
 use App\Http\Controllers\Siswa\SiswaController;
@@ -46,6 +47,10 @@ Route::middleware('api-session')->group(function () {
 
     // 👨‍🎓 Siswa
     Route::prefix('siswa')->middleware(['auth:sanctum', 'is_siswa'])->group(function () {
+        // route dashboard
+        Route::get('/dashboard', [DashboardSiswaController::class, 'dashboard']);
+
+        // registered_face
         Route::post('/registered-face', [SiswaController::class, 'registeredFace']);
         // get_profile
         Route::get("/get-profile", [ProfileController::class, 'getProfile']);
