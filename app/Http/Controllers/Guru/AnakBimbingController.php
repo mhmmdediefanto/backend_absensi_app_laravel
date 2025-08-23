@@ -12,16 +12,19 @@ class AnakBimbingController extends Controller
 {
     public function getAnakBimbing(Request $request)
     {
-        $siswa = PembimbingSiswa::where('guru_id', Auth::user()->id)->select('id', 'siswa_id', 'guru_id')->with('siswa', function ($query) use ($request) {
-            $query->select('id', 'nama', 'nis', 'kelas', 'lokasi_prakerin_id', 'status_prakerin');
-            $query->with('lokasiPrakerin', function ($query) {
-                $query->select('id', 'nama_instansi', 'alamat');
-            });
-            $query->when($request->search, function ($query, $search) {
-                $query->where('nama', 'like', "%{$search}%")
-                    ->orWhere('nis', 'like', "%{$search}%");
-            });
-        })->paginate(10);
+        $siswa = PembimbingSiswa::where('guru_id', Auth::user()->id)
+            ->whereHas('siswa', function ($query) use ($request) {
+                $query->when($request->search, function ($query, $search) {
+                    $query->where('nama', 'like', "%{$search}%")
+                        ->orWhere('nis', 'like', "%{$search}%");
+                });
+            })
+            ->with(['siswa' => function ($query) {
+                $query->select('id', 'nama', 'nis', 'kelas', 'lokasi_prakerin_id', 'status_prakerin')
+                    ->with('lokasiPrakerin:id,nama_instansi,alamat');
+            }])
+            ->select('id', 'siswa_id', 'guru_id')
+            ->paginate(10);
 
         return response()->json([
             'data' => $siswa,
@@ -32,9 +35,9 @@ class AnakBimbingController extends Controller
     }
 
 
-    public function getDetailAnakBimbing($id)
+    public function getDetailAnakBimbing($nis)
     {
-        $siswa = Siswa::where('user_id', $id)->with('lokasiPrakerin', 'guruPembimbingLokasi')->first();
+        $siswa = Siswa::where('nis', $nis)->with('lokasiPrakerin', 'guruPembimbingLokasi')->first();
         if (!$siswa) {
             return response()->json([
                 'message' => 'Siswa tidak ditemukan',

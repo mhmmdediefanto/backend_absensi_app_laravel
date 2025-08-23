@@ -9,6 +9,7 @@ use App\Models\LokasiPrakerin;
 use App\Models\Siswa;
 use App\Services\AbsensiService;
 use App\Services\FaceRecognizeService;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
@@ -19,12 +20,14 @@ class AbsensiController extends Controller
     protected $faceRecognizeService;
     protected $absensiService;
     public $hariIni;
+    public $tanggalSekarang;
 
     public function __construct(FaceRecognizeService $faceRecognizeService, AbsensiService $absensiService)
     {
         $this->faceRecognizeService = $faceRecognizeService;
         $this->absensiService = $absensiService;
         $this->hariIni = now()->locale('id')->isoFormat('dddd');
+        $this->tanggalSekarang = now()->format('Y-m-d');
     }
 
     public function getRiwayatAbsensi(Request $request)
@@ -114,6 +117,7 @@ class AbsensiController extends Controller
         // cek apakah ada jadwal prakerin hari ini
         $siswa = Siswa::where('user_id', Auth::id())->first();
 
+        // cek siswa ada atau tidak
         if (!$siswa) {
             return response()->json([
                 'message' => 'Data siswa tidak ditemukan',
@@ -121,6 +125,33 @@ class AbsensiController extends Controller
             ], 404);
         }
 
+        // cek apakah siswa sudah punya lokasi
+        if (!$siswa->lokasiPrakerin) {
+            return response()->json([
+                'message' => 'Anda belum memiliki lokasi prakerin, Silahkan Hubungi admin',
+                'code' => 404
+            ], 404);
+        }
+
+        // cek apakah jadwal prakerin tanggal mulai sudah sama dengan hari ini
+        // ambil tanggal mulai & selesai
+        $tanggalMulai = Carbon::parse($siswa->lokasiPrakerin->mulai_kerjasama);
+        $tanggalSelesai = Carbon::parse($siswa->lokasiPrakerin->selesai_kerjasama);
+
+        // tanggal hari ini (tanpa jam)
+        $tanggalSekarang = Carbon::today();
+
+        // cek apakah sekarang berada di antara mulai dan selesai
+        if (!$tanggalSekarang->between($tanggalMulai, $tanggalSelesai)) {
+            $waktuMulai = $tanggalMulai->locale('id')->translatedFormat('l, d F Y');
+            $waktuSelesai = $tanggalSelesai->locale('id')->translatedFormat('l, d F Y');
+
+            return response()->json([
+                'message' => "Jadwal prakerin belum aktif. Periode: $waktuMulai - $waktuSelesai",
+                'code' => 422,
+            ], 422);
+        }
+        
         $lokasiPrakerins = $siswa->load(['lokasiPrakerin.jadwalPrakerin' => function ($query) use ($hariIni) {
             $query->where('hari', $hariIni);
             $query->where('status_aktif', true);

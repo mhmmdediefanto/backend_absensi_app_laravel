@@ -12,6 +12,7 @@ use App\Http\Controllers\Guru\AnakBimbingController;
 use App\Http\Controllers\Guru\LokasiPembimbingPrakerin;
 use App\Http\Controllers\ImageUploaderController;
 use App\Http\Controllers\Siswa\AbsensiController;
+use App\Http\Controllers\Siswa\DashboardSiswaController;
 use App\Http\Controllers\Siswa\KegiatanPrakerinController;
 use App\Http\Controllers\Siswa\ProfileController;
 use App\Http\Controllers\Siswa\SiswaController;
@@ -37,7 +38,7 @@ Route::middleware('api-session')->group(function () {
         // get_anak_bimbing
         Route::get('/get-anak-bimbing', [AnakBimbingController::class, 'getAnakBimbing']);
         Route::get('/detail-anak-bimbing/{id}', [AnakBimbingController::class, 'getDetailAnakBimbing']);
-        
+
 
         // absensi anak bimbing
         Route::get('/get-absensi-anak-bimbing-today', [AbsensiAnakBimbingController::class, 'getAbsensiAnakBimbingToday']);
@@ -46,6 +47,10 @@ Route::middleware('api-session')->group(function () {
 
     // 👨‍🎓 Siswa
     Route::prefix('siswa')->middleware(['auth:sanctum', 'is_siswa'])->group(function () {
+        // route dashboard
+        Route::get('/dashboard', [DashboardSiswaController::class, 'dashboard']);
+
+        // registered_face
         Route::post('/registered-face', [SiswaController::class, 'registeredFace']);
         // get_profile
         Route::get("/get-profile", [ProfileController::class, 'getProfile']);
@@ -61,6 +66,11 @@ Route::middleware('api-session')->group(function () {
         Route::get('/get-kegiatan-prakerin', [KegiatanPrakerinController::class, 'getKegiatanPrakerin']);
         Route::post('/create-kegiatan-prakerin', [KegiatanPrakerinController::class, 'createKegiatanPrakerin']);
         Route::delete('/delete-kegiatan-prakerin/{id}', [KegiatanPrakerinController::class, 'destroyKegiatanPrakerin']);
+    });
+
+    // route siswa dan guru 
+    Route::middleware(['auth:sanctum', 'roles:siswa, guru'])->group(function () {
+        Route::put('/siswa/update-kegiatan-prakerin/{id}', [KegiatanPrakerinController::class, 'updateKegiatanPrakerin']);
     });
 
     // 🧑‍💼 Admin
