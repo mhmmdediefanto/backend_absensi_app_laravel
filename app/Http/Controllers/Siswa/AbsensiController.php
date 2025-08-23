@@ -134,17 +134,24 @@ class AbsensiController extends Controller
         }
 
         // cek apakah jadwal prakerin tanggal mulai sudah sama dengan hari ini
-        $cekJadwalMulaiPrakerin = $siswa->lokasiPrakerin->pluck('mulai_kerjasama')->first();
-        $waktuMulaiPrakerin = Carbon::parse($cekJadwalMulaiPrakerin)
-            ->locale('id') // set locale Indonesia
-            ->translatedFormat('l, d F Y');
-        if ($cekJadwalMulaiPrakerin != $this->tanggalSekarang) {
+        // ambil tanggal mulai & selesai
+        $tanggalMulai = Carbon::parse($siswa->lokasiPrakerin->mulai_kerjasama);
+        $tanggalSelesai = Carbon::parse($siswa->lokasiPrakerin->selesai_kerjasama);
+
+        // tanggal hari ini (tanpa jam)
+        $tanggalSekarang = Carbon::today();
+
+        // cek apakah sekarang berada di antara mulai dan selesai
+        if (!$tanggalSekarang->between($tanggalMulai, $tanggalSelesai)) {
+            $waktuMulai = $tanggalMulai->locale('id')->translatedFormat('l, d F Y');
+            $waktuSelesai = $tanggalSelesai->locale('id')->translatedFormat('l, d F Y');
+
             return response()->json([
-                'message' => "Jadwal prakerin belum dimulai, Mulai pada hari $waktuMulaiPrakerin",
+                'message' => "Jadwal prakerin belum aktif. Periode: $waktuMulai - $waktuSelesai",
                 'code' => 422,
             ], 422);
         }
-
+        
         $lokasiPrakerins = $siswa->load(['lokasiPrakerin.jadwalPrakerin' => function ($query) use ($hariIni) {
             $query->where('hari', $hariIni);
             $query->where('status_aktif', true);
