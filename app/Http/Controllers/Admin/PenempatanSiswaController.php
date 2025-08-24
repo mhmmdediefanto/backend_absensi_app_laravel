@@ -10,9 +10,25 @@ use Illuminate\Http\Request;
 class PenempatanSiswaController extends Controller
 {
 
-    public function index()
+    public function index(Request $request)
     {
-        $siswa = Siswa::with(['lokasiPrakerin', 'guruPembimbingLokasi'])->whereNotNull('lokasi_prakerin_id')->latest()->paginate(10);
+        $search = $request->input('search');
+
+        $siswa = Siswa::with(['lokasiPrakerin', 'guruPembimbingLokasi'])
+            ->whereNotNull('lokasi_prakerin_id')
+            ->when($search, function ($query) use ($search) {
+                $query->where('nama', 'like', "%{$search}%") // search di nama siswa
+                    ->orWhere('nis', 'like', "%{$search}%")
+                    ->orWhereHas('lokasiPrakerin', function ($q) use ($search) {
+                        $q->where('nama_instansi', 'like', "%{$search}%");
+                    })
+                    ->orWhereHas('guruPembimbingLokasi', function ($q) use ($search) {
+                        $q->where('nama', 'like', "%{$search}%");
+                    });
+            })
+            ->latest()
+            ->paginate(10);
+
         return response()->json([
             'message' => 'Data siswa berhasil diambil',
             'total_siswa_lokasi' => Siswa::countSiswaLokasi(),

@@ -13,19 +13,41 @@ use Illuminate\Validation\ValidationException;
 
 class kelolaPembimngLokasiController extends Controller
 {
-    public function getKelolaPembimbingLokasi()
+    public function getKelolaPembimbingLokasi(Request $request)
     {
-        $kelolaPembimbingLokasi = ModelsGuruLokasi::with(['guru' => function ($query) {
-            $query->select('id', 'nama');
-        }, 'lokasiPrakerin' => function ($query) {
-            $query->select('id', 'nama_instansi');
-        }])->select('id', 'guru_id', 'lokasi_prakerin_id')->latest()->paginate(10);
+        $request->validate([
+            'search' => 'nullable|string',
+        ]);
+
+        $search = $request->input('search');
+
+        $kelolaPembimbingLokasi = ModelsGuruLokasi::with([
+            'guru' => function ($query) {
+                $query->select('id', 'nama');
+            },
+            'lokasiPrakerin' => function ($query) {
+                $query->select('id', 'nama_instansi');
+            }
+        ])
+            ->select('id', 'guru_id', 'lokasi_prakerin_id')
+            ->when($search, function ($query) use ($search) {
+                $query->whereHas('guru', function ($q) use ($search) {
+                    $q->where('nama', 'like', "%{$search}%");
+                })
+                    ->orWhereHas('lokasiPrakerin', function ($q) use ($search) {
+                        $q->where('nama_instansi', 'like', "%{$search}%");
+                    });
+            })
+            ->latest()
+            ->paginate(10);
+
         return response()->json([
             'message' => 'Data kelola pembimbing lokasi retrieved successfully',
             'status' => 'success',
             'data' => $kelolaPembimbingLokasi
         ]);
     }
+
 
     public function addKelola(Request $request)
     {
@@ -58,7 +80,7 @@ class kelolaPembimngLokasiController extends Controller
                 $s->guruPembimbingLokasi()->syncWithoutDetaching($request->guru_id);
             }
         }
-        
+
         return response()->json([
             'message' => 'Data kelola pembimbing lokasi created successfully',
             'status' => 'success',
