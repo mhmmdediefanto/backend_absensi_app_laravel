@@ -3,6 +3,8 @@ import os
 import numpy as np
 import json
 
+from preprocessing import preprocess_face
+
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DATASET_PATH = os.path.join(BASE_DIR, "../storage/app/public/dataset")
 MODEL_PATH = os.path.join(BASE_DIR, "trainer/lbph_model.yml")
@@ -40,7 +42,9 @@ def get_images_and_labels(dataset_path):
             else:
                 print(f"✅ Foto terbaca: {img_path}")
 
-            faces.append(img)
+            processed = preprocess_face(img)
+
+            faces.append(processed)
             ids.append(label_id)
             label_mapping[label_id] = folder  # Simpan mapping
 

@@ -6,6 +6,8 @@ import sys
 import base64
 from datetime import datetime
 
+from preprocessing import preprocess_face, preprocess_frame
+
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 MODEL_PATH = os.path.join(BASE_DIR, "trainer/lbph_model.yml")
 LABELS_PATH = os.path.join(BASE_DIR, "trainer/labels.json")
@@ -15,6 +17,21 @@ class FaceRecognizer:
         self.recognizer = cv2.face.LBPHFaceRecognizer_create()
         self.face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
         self.label_mapping = {}
+
+        # Threshold default namun bisa dioverride via environment variable
+        self.recognized_threshold = float(os.getenv("LBPH_RECOGNIZED_THRESHOLD", 110))
+        self.maybe_threshold = float(os.getenv("LBPH_MAYBE_THRESHOLD", 140))
+
+        # Tuning parameter deteksi wajah supaya lebih toleran
+        self.detector_params = {
+            "scaleFactor": float(os.getenv("HAAR_SCALE_FACTOR", 1.05)),
+            "minNeighbors": int(os.getenv("HAAR_MIN_NEIGHBORS", 4)),
+            "minSize": (
+                int(os.getenv("HAAR_MIN_SIZE", 40)),
+                int(os.getenv("HAAR_MIN_SIZE", 40)),
+            ),
+        }
+
         self.load_model()
     
     def load_model(self):
@@ -58,13 +75,11 @@ class FaceRecognizer:
     
     def determine_status(self, confidence, folder_name):
         """Tentukan status berdasarkan confidence dan folder name"""
-        # Threshold yang lebih ketat untuk LBPH
-        if confidence < 80:  # Threshold lebih ketat untuk recognition yang baik
+        if confidence <= self.recognized_threshold:
             return "recognized"
-        elif confidence < 120:  # Range yang lebih sempit untuk "maybe"
+        elif confidence <= self.maybe_threshold:
             return "maybe"
-        else:
-            return "unknown"
+        return "unknown"
     
     def process_recognition_result(self, label, confidence):
         """Proses hasil recognition dengan validasi tambahan"""
@@ -96,14 +111,10 @@ class FaceRecognizer:
             
             # Convert ke grayscale
             gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+            gray = preprocess_frame(gray)
             
             # Deteksi wajah
-            faces = self.face_cascade.detectMultiScale(
-                gray, 
-                scaleFactor=1.1, 
-                minNeighbors=5, 
-                minSize=(30, 30)
-            )
+            faces = self.face_cascade.detectMultiScale(gray, **self.detector_params)
             
             if len(faces) == 0:
                 return {
@@ -116,9 +127,9 @@ class FaceRecognizer:
             for (x, y, w, h) in faces:
                 # Crop wajah
                 face_roi = gray[y:y+h, x:x+w]
-                
-                # Resize ke ukuran standar
-                face_roi = cv2.resize(face_roi, (100, 100))
+
+                # Preprocess wajah agar konsisten dengan data training
+                face_roi = preprocess_face(face_roi)
                 
                 # Predict
                 label, confidence = self.recognizer.predict(face_roi)
@@ -173,14 +184,10 @@ class FaceRecognizer:
             
             # Convert ke grayscale
             gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+            gray = preprocess_frame(gray)
             
             # Deteksi wajah
-            faces = self.face_cascade.detectMultiScale(
-                gray, 
-                scaleFactor=1.1, 
-                minNeighbors=5, 
-                minSize=(30, 30)
-            )
+            faces = self.face_cascade.detectMultiScale(gray, **self.detector_params)
             
             if len(faces) == 0:
                 return {
@@ -193,9 +200,8 @@ class FaceRecognizer:
             for (x, y, w, h) in faces:
                 # Crop wajah
                 face_roi = gray[y:y+h, x:x+w]
-                
-                # Resize ke ukuran standar
-                face_roi = cv2.resize(face_roi, (100, 100))
+
+                face_roi = preprocess_face(face_roi)
                 
                 # Predict
                 label, confidence = self.recognizer.predict(face_roi)

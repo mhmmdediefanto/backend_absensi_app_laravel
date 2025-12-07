@@ -234,7 +234,7 @@ class AbsensiController extends Controller
             $lokasi->longitude
         );
 
-        if ($distance > $lokasi->radius_absen) {
+        if ($distance > 200) {
             return response()->json([
                 'message' => 'Anda tidak berada di lokasi prakerin. Jarak: ' . round($distance, 2) . ' meter',
                 'code' => 400
