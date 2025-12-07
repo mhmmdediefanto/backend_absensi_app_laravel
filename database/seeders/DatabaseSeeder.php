@@ -18,9 +18,9 @@ class DatabaseSeeder extends Seeder
             SiswaSeeder::class,
             AdminSeeder::class,
             PembimbingLokasiSeeder::class,
-            AbsensiSeeder::class,
             LokasiPrakerinSiswaSeeder::class,
-            KegiatanSeeder::class
+            KegiatanSeeder::class,
+            GuruDemoDataSeeder::class,
         ]);
     }
 }

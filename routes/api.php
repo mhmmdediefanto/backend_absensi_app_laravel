@@ -10,6 +10,8 @@ use App\Http\Controllers\FaceRecognitionController;
 use App\Http\Controllers\Guru\AbsensiAnakBimbingController;
 use App\Http\Controllers\Guru\AnakBimbingController;
 use App\Http\Controllers\Guru\LokasiPembimbingPrakerin;
+use App\Http\Controllers\Guru\DashboardGuruController;
+use App\Http\Controllers\Guru\KegiatanSiswaController;
 use App\Http\Controllers\ImageUploaderController;
 use App\Http\Controllers\Siswa\AbsensiController;
 use App\Http\Controllers\Siswa\DashboardSiswaController;
@@ -31,6 +33,7 @@ Route::middleware('api-session')->group(function () {
 
     // 🧑‍🏫 Guru
     Route::prefix('guru')->middleware(['auth:sanctum', 'is_guru'])->group(function () {
+        Route::get('/dashboard', DashboardGuruController::class);
         // get_lokasi_prakerin
         Route::get('/get-lokasi-prakerin', [LokasiPembimbingPrakerin::class, 'getAllLokasiPembimbing']);
         Route::get('/detail-lokasi-prakerin/{id}', [LokasiPembimbingPrakerin::class, 'getDetailLokasiPembimbing']);
@@ -43,6 +46,11 @@ Route::middleware('api-session')->group(function () {
         // absensi anak bimbing
         Route::get('/get-absensi-anak-bimbing-today', [AbsensiAnakBimbingController::class, 'getAbsensiAnakBimbingToday']);
         Route::get("/history-absensi-anak-bimbing", [AbsensiAnakBimbingController::class, 'historyAbsensiAnakBimbing']);
+        Route::get("/all-absensi-anak-bimbing", [AbsensiAnakBimbingController::class, 'allAbsensiAnakBimbing']);
+
+        // kegiatan laporan harian siswa
+        Route::get('/kegiatan-siswa', [KegiatanSiswaController::class, 'index']);
+        Route::get('/kegiatan-siswa/{id}', [KegiatanSiswaController::class, 'show']);
     });
 
     // 👨‍🎓 Siswa

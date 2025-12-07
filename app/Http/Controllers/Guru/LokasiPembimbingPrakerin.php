@@ -33,9 +33,6 @@ class LokasiPembimbingPrakerin extends Controller
     public function getDetailLokasiPembimbing($id)
     {
         $lokasi = LokasiPrakerin::with([
-            'siswa' => function ($query) {
-                $query->select('id', 'nama', 'nis', 'kelas', 'lokasi_prakerin_id', 'status_prakerin'); // pastikan FK disertakan
-            },
             'jadwalPrakerin',
             'guruPembimbing' => function ($query) {
                 $query->select('guru_id', 'nama', 'nip', 'no_hp', 'jabatan', 'lokasi_prakerin_id'); // FK juga disertakan

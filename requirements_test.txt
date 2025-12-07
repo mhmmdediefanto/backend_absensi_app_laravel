@@ -1,0 +1,6 @@
+# Dependencies untuk testing GPS Distance
+# Install dengan: pip install -r requirements_test.txt
+
+requests>=2.31.0
+
+
